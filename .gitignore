@@ -1,0 +1,6 @@
+*.bin
+*.srec
+*.swp
+*.o
+*.dis
+Flasher
