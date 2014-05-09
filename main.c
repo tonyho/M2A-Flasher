@@ -9,6 +9,12 @@
 #include<unistd.h>
 #include<string.h>
 #include"cpu.h"
+#include"serial_sh.h"
+
+/*!!FixME!! Use the header file instead of directly declare*/
+extern int sh_serial_init(void);
+extern void sh_serial_putc(const char c);
+/*!!FixME!! End*/
 
 /*
 **GPIO registers,Ref datasheet page181
@@ -47,6 +53,7 @@ void somedelay(unsigned long delay);
 void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned int HL);
 
 int main(int argc, char * argv[]){
+    int ret;
 #ifdef TEST_LED_KOELSCH
     volatile unsigned long *pGP2 = (volatile unsigned long *)GPIO2_VALUE;
 #endif
@@ -68,6 +75,8 @@ int main(int argc, char * argv[]){
         GpioOutput(GPIO2_BASE,20,1);
         somedelay(1);
     }
+    ret = sh_serial_init();
+    sh_serial_putc('A');
     return 0;
 }
 

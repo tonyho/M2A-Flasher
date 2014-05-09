@@ -1,7 +1,9 @@
 /*
  * Copy and modify from linux/drivers/serial/sh-sci.h
  */
+/*!!FixME!! See the circuit to right config, and move this definition to config.h*/
 #define CONFIG_R8A7791
+/*!!FixME!! End*/
 struct uart_port {
 	unsigned long	iobase;		/* in/out[bwl] */
 	unsigned char	*membase;	/* read/write[bwl] */

@@ -19,13 +19,21 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <common.h>
-#include <asm/io.h>
-#include <asm/processor.h>
+//#include <common.h>
+//#include <asm/io.h>
+//#include <asm/processor.h>
+#include "io.h"
+#include "cpu.h"
 #include "serial_sh.h"
-#include <serial.h>
-#include <linux/compiler.h>
-
+//#include <serial.h>
+//#include <linux/compiler.h>
+/*!!FixME!! See the circuit to right config, and move this definition to config.h*/
+#define CONFIG_R8A7791
+#define CONFIG_CONS_SCIF0
+#define SCIF0_BASE 0x65000000
+#define CONFIG_SCIF_CLK_FREQ 50000000
+#define CONFIG_SYS_CLK_FREQ 50000000
+/*!!FixME!! End*/
 #if defined(CONFIG_CONS_SCIF0)
 # define SCIF_BASE	SCIF0_BASE
 #elif defined(CONFIG_CONS_SCIF1)
@@ -58,18 +66,27 @@ static struct uart_port sh_sci = {
 	.type		= SCIF_BASE_PORT,
 };
 
-static void sh_serial_setbrg(void)
+void udelay(unsigned long delay){
+    //unsigned long tmp = 0xffffff; //7Seconds
+    unsigned long tmp = 0x50000;
+    for(; delay>0; delay--){
+        for(; tmp>0; tmp--){
+            ;
+        }
+    }
+}
+
+void sh_serial_setbrg(void)
 {
-	DECLARE_GLOBAL_DATA_PTR;
 #if defined(CONFIG_R8A7790) || defined(CONFIG_R8A7791)
-	sci_out(&sh_sci, DL, DL_VALUE(gd->baudrate, CONFIG_SCIF_CLK_FREQ));
+	sci_out(&sh_sci, DL,CONFIG_SCIF_CLK_FREQ);
 	udelay((1000000 * 2 * 16 / CONFIG_SYS_CLK_FREQ) * 1000 + 1);
 #else
 	sci_out(&sh_sci, SCBRR, SCBRR_VALUE(gd->baudrate, CONFIG_SYS_CLK_FREQ));
 #endif
 }
 
-static int sh_serial_init(void)
+int sh_serial_init(void)
 {
 	sci_out(&sh_sci, SCSCR , SCSCR_INIT(&sh_sci));
 	sci_out(&sh_sci, SCSCR , SCSCR_INIT(&sh_sci));
@@ -79,7 +96,7 @@ static int sh_serial_init(void)
 	sci_in(&sh_sci, SCFCR);
 	sci_out(&sh_sci, SCFCR, 0);
 
-	serial_setbrg();
+	sh_serial_setbrg();
 	return 0;
 }
 
@@ -143,7 +160,7 @@ void serial_raw_putc(const char c)
 	sci_out(&sh_sci, SCxSR, sci_in(&sh_sci, SCxSR) & ~SCxSR_TEND(&sh_sci));
 }
 
-static void sh_serial_putc(const char c)
+void sh_serial_putc(const char c)
 {
 	if (c == '\n')
 		serial_raw_putc('\r');
@@ -174,7 +191,7 @@ int serial_getc_check(void)
 	return status & (SCIF_DR | SCxSR_RDxF(&sh_sci));
 }
 
-static int sh_serial_getc(void)
+int sh_serial_getc(void)
 {
 	unsigned short status;
 	char ch;
@@ -195,23 +212,3 @@ static int sh_serial_getc(void)
 	return ch;
 }
 
-static struct serial_device sh_serial_drv = {
-	.name	= "sh_serial",
-	.start	= sh_serial_init,
-	.stop	= NULL,
-	.setbrg	= sh_serial_setbrg,
-	.putc	= sh_serial_putc,
-	.puts	= default_serial_puts,
-	.getc	= sh_serial_getc,
-	.tstc	= sh_serial_tstc,
-};
-
-void sh_serial_initialize(void)
-{
-	serial_register(&sh_serial_drv);
-}
-
-__weak struct serial_device *default_serial_console(void)
-{
-	return &sh_serial_drv;
-}

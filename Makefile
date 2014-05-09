@@ -7,7 +7,8 @@ all:
 	#$(CROSS_COMPILE)gcc -c -g -fPIC boot_mon_spi.S  -o boot_mon_spi.o
 	$(CROSS_COMPILE)gcc -c -g $(CFAGS) -fPIC start.S  -o start.o
 	$(CROSS_COMPILE)gcc -c -g  $(CFAGS) main.c  -o main.o $(INCS)
-	$(CROSS_COMPILE)ld -TFlasher.lds start.o main.o -o Flasher 
+	$(CROSS_COMPILE)gcc -c -g  $(CFAGS) serial_sh.c  -o serial_sh.o $(INCS)
+	$(CROSS_COMPILE)ld -TFlasher.lds start.o main.o serial_sh.o -o Flasher 
 	$(CROSS_COMPILE)objdump -d start.o > start.dis
 	$(CROSS_COMPILE)objdump -d Flasher > Flasher.dis
 	$(CROSS_COMPILE)objcopy --output-target=binary Flasher Flasher.bin
