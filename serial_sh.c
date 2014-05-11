@@ -68,7 +68,8 @@ static struct uart_port sh_sci = {
 
 void udelay(unsigned long delay){
     //unsigned long tmp = 0xffffff; //7Seconds
-    unsigned long tmp = 0x50000;
+    //unsigned long tmp = 0x50000;
+    unsigned long tmp = 0x100;
     for(; delay>0; delay--){
         for(; tmp>0; tmp--){
             ;

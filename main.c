@@ -14,6 +14,8 @@
 /*!!FixME!! Use the header file instead of directly declare*/
 extern int sh_serial_init(void);
 extern void sh_serial_putc(const char c);
+extern struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
+		unsigned int max_hz, unsigned int mode);
 /*!!FixME!! End*/
 
 /*
@@ -54,6 +56,7 @@ void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned in
 
 int main(int argc, char * argv[]){
     int ret;
+    struct spi_slave *pSpiSlave = NULL;
 #ifdef TEST_LED_KOELSCH
     volatile unsigned long *pGP2 = (volatile unsigned long *)GPIO2_VALUE;
 #endif
@@ -77,6 +80,7 @@ int main(int argc, char * argv[]){
     }
     ret = sh_serial_init();
     sh_serial_putc('A');
+    pSpiSlave = spi_setup_slave(0, 0,0,0);
     return 0;
 }
 

@@ -343,7 +343,8 @@
 #define	DBSC3_0_DBTR19		 	(DBSC3_0_BASE + 0x090)	//	SDRAMタイミングレジスタ19
 #define	DBSC3_0_DBBL		 	(DBSC3_0_BASE + 0x0B0)	//	SDRAM動作設定レジスタ
 #define	DBSC3_0_DBADJ0		 	(DBSC3_0_BASE + 0x0C0)	//	DBSC3動作調整レジスタ0
-#define	DBSC3_0_DBADJ2		 	(DBSC3_0_BASE + 0x0C8)	//	DBSC3動作調整レジスタ2
+//Below is already defined in r8a7791.h
+//#define	DBSC3_0_DBADJ2		 	(DBSC3_0_BASE + 0x0C8)	//	DBSC3動作調整レジスタ2
 #define	DBSC3_0_DBRFCNF0	 	(DBSC3_0_BASE + 0x0E0)	//	リフレッシュ設定レジスタ0
 #define	DBSC3_0_DBRFCNF1	 	(DBSC3_0_BASE + 0x0E4)	//	リフレッシュ設定レジスタ1
 #define	DBSC3_0_DBRFCNF2	 	(DBSC3_0_BASE + 0x0E8)	//	リフレッシュ設定レジスタ2
