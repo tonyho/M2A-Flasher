@@ -94,6 +94,8 @@ int main(int argc, char * argv[]){
     ret = sh_serial_init();
     GpioOutput(LED_GPIO_BASE,LED6,LED_ON);
     sh_serial_putc('A');
+    sh_serial_putc('B');
+    sh_serial_putc('C');
     GpioOutput(LED_GPIO_BASE,LED7,LED_ON);
     //pSpiSlave = spi_setup_slave(0, 0,0,0);
     return 0;
