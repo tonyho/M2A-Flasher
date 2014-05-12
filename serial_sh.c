@@ -25,6 +25,7 @@
 #include "io.h"
 #include "cpu.h"
 #include "serial_sh.h"
+#include <stdarg.h>
 //#include <serial.h>
 //#include <linux/compiler.h>
 /*!!FixME!! See the circuit to right config, and move this definition to config.h*/
@@ -75,6 +76,82 @@ void udelay(unsigned long delay){
             ;
         }
     }
+}
+
+//#define putc	sh_serial_putc
+/*
+ * Conver int to string based on radix (usually 2, 8, 10, and 16)
+ */
+char *itoa(int num, char *str, int radix) 
+{
+    char string[] = "0123456789abcdefghijklmnopqrstuvwxyz";
+
+    char* ptr = str;
+    int i;
+    int j;
+
+    while (num)
+    {
+        if(16 == radix){
+            *ptr++ = string[num % 16];
+            num /= 16;
+
+            if (num < 16)
+            {
+                *ptr++ = string[num];
+                *ptr = '\0';
+                break;
+            }
+        }
+        if(10 == radix){
+            *ptr++ = string[num % 10];
+            num /= 10;
+
+            if (num < 10)
+            {
+                *ptr++ = string[num];
+                *ptr = '\0';
+                break;
+            }
+        }
+        if(8 == radix){
+            *ptr++ = string[num % 8];
+            num /= 8;
+
+            if (num < 8)
+            {
+                *ptr++ = string[num];
+                *ptr = '\0';
+                break;
+            }
+        }
+#if 0
+        //for the compiler setting, we have to use the above 10/16 const value instead of radix
+        //Otherwise it will hint the below link error:
+        //undefined reference to `__aeabi_idivmod'
+        //undefined reference to `__aeabi_idiv'
+        *ptr++ = string[num % radix];
+        num /= radix;
+
+        if (num < radix)
+        {
+            *ptr++ = string[num];
+            *ptr = '\0';
+            break;
+        }
+#endif
+    }
+
+    j = ptr - str - 1;
+
+    for (i = 0; i < (ptr - str) / 2; i++)
+    {
+        int temp = str[i];
+        str[i] = str[j];
+        str[j--] = temp;
+    }
+
+    return str;
 }
 
 void sh_serial_setbrg(void)
@@ -169,6 +246,86 @@ void sh_serial_putc(const char c)
 		serial_raw_putc('\r');
 	serial_raw_putc(c);
 }
+
+void sh_serial_puts(const char *s)
+{
+    char c = *s;
+    while('\0' != c){
+        if (c == '\n')
+            serial_raw_putc('\r');
+        serial_raw_putc(c);
+        s++;
+        c= *s;
+    }
+}
+
+
+/*
+ * A simple printf function. Only support the following format:
+ * Code Format
+ * %c character
+ * %d signed integers
+ * %i signed integers
+ * %s a string of characters
+ * %o octal
+ * %x unsigned hexadecimal
+ * Notice: This printf can output >0x80000000 value 
+ */
+int printf( const char* format, ...)
+{
+    va_list arg;
+    int done = 0;
+
+    va_start (arg, format);
+
+    while( *format != '\0')
+    {
+        if( *format == '%')
+        {
+            if( *(format+1) == 'c' )
+            {
+                char c = (char)va_arg(arg, int);
+                sh_serial_putc(c);
+            } else if( *(format+1) == 'd' || *(format+1) == 'i')
+            {
+                char store[20];
+                int i = va_arg(arg, int);
+                char* str = store;
+                itoa(i, store, 10);
+                while( *str != '\0') sh_serial_putc(*str++); 
+            } else if( *(format+1) == 'o')
+            {
+                char store[20];
+                int i = va_arg(arg, int);
+                char* str = store;
+                itoa(i, store, 8);
+                while( *str != '\0') sh_serial_putc(*str++); 
+            } else if( *(format+1) == 'x')
+            {
+                char store[30];
+                //int i = va_arg(arg, int);
+                long i = va_arg(arg, long);
+                char* str = store;
+                itoa(i, store, 16);
+                while( *str != '\0') sh_serial_putc(*str++); 
+            } else if( *(format+1) == 's' )
+            {
+                char* str = va_arg(arg, char*);
+                while( *str != '\0') sh_serial_putc(*str++);
+            }
+
+            // Skip this two characters.
+
+            format += 2;
+        } else {
+            sh_serial_putc(*format++);
+        }
+    }
+
+    va_end (arg);
+
+    return done;
+} 
 
 static int sh_serial_tstc(void)
 {

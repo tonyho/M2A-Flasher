@@ -23,7 +23,7 @@
 
 #include "spi.h"
 /*!!FixMe!!*/
-#define CONFIG_SH_QSPI_BASE 0x123456
+#define CONFIG_SH_QSPI_BASE 0xe6b10000
 /*!!FixMe!! end*/
 struct sh_qspi_regs {
 	unsigned char spcr;

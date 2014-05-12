@@ -5,7 +5,7 @@
  *  Flash the SpiNorFlash and load the Bootloader then run it
  */
 
-#include<stdio.h>
+//#include<stdio.h>
 #include<unistd.h>
 #include<string.h>
 #include"cpu.h"
@@ -23,6 +23,7 @@ extern int sh_serial_init(void);
 extern void sh_serial_putc(const char c);
 extern struct spi_slave *spi_setup_slave(unsigned int bus, unsigned int cs,
 		unsigned int max_hz, unsigned int mode);
+extern void sh_serial_puts(const char *s);
 /*!!FixME!! End*/
 
 /*
@@ -62,7 +63,7 @@ void somedelay(unsigned long delay);
 void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned int HL);
 
 int main(int argc, char * argv[]){
-    int ret;
+    int ret, input;
     struct spi_slave *pSpiSlave = NULL;
 #ifdef TEST_LED_KOELSCH
     volatile unsigned long *pGP2 = (volatile unsigned long *)GPIO2_VALUE;
@@ -92,12 +93,21 @@ int main(int argc, char * argv[]){
     GpioOutput(LED_GPIO_BASE,LED8,LED_OFF);
 
     ret = sh_serial_init();
+    somedelay(2);
     GpioOutput(LED_GPIO_BASE,LED6,LED_ON);
     sh_serial_putc('A');
     sh_serial_putc('B');
     sh_serial_putc('C');
+    sh_serial_puts("Hello World\n");
+    //Below cannot be output, for the implement of printf
+    //printf("LEDbase=%x\n",0x80000000);
+    //printf("LEDbase=%x\n",0x8034c6bf);
+    //printf("LEDbase=%d\n",0x8034c6bf);
+    printf("LEDbase=%s\n","hello");
+    input = sh_serial_getc();
+    printf("input=%c\n",input);
     GpioOutput(LED_GPIO_BASE,LED7,LED_ON);
-    //pSpiSlave = spi_setup_slave(0, 0,0,0);
+    pSpiSlave = spi_setup_slave(0, 0,0,0);
     return 0;
 }
 

@@ -11,6 +11,8 @@ struct uart_port {
 	unsigned int	type;		/* port type */
 };
 
+#define putc	sh_serial_putc
+
 #define PORT_SCI	52
 #define PORT_SCIF	53
 #define PORT_SCIFA	83
