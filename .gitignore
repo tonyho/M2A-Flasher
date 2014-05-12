@@ -1,6 +1,8 @@
 *.bin
 *.srec
 *.swp
+*.swm
+*.swn
 *.o
 *.dis
 *.swo

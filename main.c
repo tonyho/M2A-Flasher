@@ -11,6 +11,13 @@
 #include"cpu.h"
 #include"serial_sh.h"
 
+#define LED6 19
+#define LED7 20
+#define LED8 21
+#define LED_GPIO_BASE GPIO2_BASE
+#define LED_ON  1    
+#define LED_OFF 0    
+
 /*!!FixME!! Use the header file instead of directly declare*/
 extern int sh_serial_init(void);
 extern void sh_serial_putc(const char c);
@@ -60,7 +67,7 @@ int main(int argc, char * argv[]){
 #ifdef TEST_LED_KOELSCH
     volatile unsigned long *pGP2 = (volatile unsigned long *)GPIO2_VALUE;
 #endif
-    unsigned long LedFlashCoutner = 100;
+    unsigned long LedFlashCoutner = 10;
 #ifdef TEST_LED_KOELSCH
     while(LedFlashCoutner--){
         *pGP2 = 0x55555555;
@@ -70,6 +77,7 @@ int main(int argc, char * argv[]){
     }
 #endif
 
+#if 0
     while(LedFlashCoutner--){
         GpioOutput(GPIO2_BASE,19,0);
         GpioOutput(GPIO2_BASE,20,0);
@@ -78,9 +86,16 @@ int main(int argc, char * argv[]){
         GpioOutput(GPIO2_BASE,20,1);
         somedelay(1);
     }
+#endif    
+    GpioOutput(LED_GPIO_BASE,LED6,LED_OFF);
+    GpioOutput(LED_GPIO_BASE,LED7,LED_OFF);
+    GpioOutput(LED_GPIO_BASE,LED8,LED_OFF);
+
     ret = sh_serial_init();
+    GpioOutput(LED_GPIO_BASE,LED6,LED_ON);
     sh_serial_putc('A');
-    pSpiSlave = spi_setup_slave(0, 0,0,0);
+    GpioOutput(LED_GPIO_BASE,LED7,LED_ON);
+    //pSpiSlave = spi_setup_slave(0, 0,0,0);
     return 0;
 }
 

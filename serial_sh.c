@@ -30,9 +30,9 @@
 /*!!FixME!! See the circuit to right config, and move this definition to config.h*/
 #define CONFIG_R8A7791
 #define CONFIG_CONS_SCIF0
-#define SCIF0_BASE 0x65000000
-#define CONFIG_SCIF_CLK_FREQ 50000000
-#define CONFIG_SYS_CLK_FREQ 50000000
+#define SCIF0_BASE 0xe6e60000
+#define CONFIG_SCIF_CLK_FREQ 14745600 
+#define CONFIG_SYS_CLK_FREQ  10000000
 /*!!FixME!! End*/
 #if defined(CONFIG_CONS_SCIF0)
 # define SCIF_BASE	SCIF0_BASE
@@ -80,8 +80,10 @@ void udelay(unsigned long delay){
 void sh_serial_setbrg(void)
 {
 #if defined(CONFIG_R8A7790) || defined(CONFIG_R8A7791)
-	sci_out(&sh_sci, DL,CONFIG_SCIF_CLK_FREQ);
-	udelay((1000000 * 2 * 16 / CONFIG_SYS_CLK_FREQ) * 1000 + 1);
+	//sci_out(&sh_sci, DL,CONFIG_SCIF_CLK_FREQ);
+	sci_out(&sh_sci, DL,DL_VALUE(38400,CONFIG_SCIF_CLK_FREQ));
+	//udelay((1000000 * 2 * 16 / CONFIG_SYS_CLK_FREQ) * 1000 + 1);
+	udelay(1);
 #else
 	sci_out(&sh_sci, SCBRR, SCBRR_VALUE(gd->baudrate, CONFIG_SYS_CLK_FREQ));
 #endif
