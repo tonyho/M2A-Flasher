@@ -4,9 +4,10 @@ INCS =  -I$(INCDIR)
 CROSS_COMPILE = /work/SmartAuto-312/prebuilt/toolchains/arm-fsl-linux-gnueabi/4.6.2/bin/arm-none-linux-gnueabi-
 NOSTDLIB = -nostdlib 
 NOBUILTIN = -fno-builtin -fno-builtin-putc -fno-builtin-printf
+OPTMIZATION = -O1 # Optimize for size
 #LIBS = -lgcc -L/work/SmartAuto-312/prebuilt/toolchains/arm-fsl-linux-gnueabi/4.6.2/lib/gcc/arm-fsl-linux-gnueabi/4.6.2
 #LIBS = /home/hexiongjun/github/BBB/arm-2010.09/lib/gcc/arm-none-linux-gnueabi/4.5.1
-CFLAGS = $(NOSTDLIB) $(NOBUILTIN)#$(LIBS) 
+CFLAGS = $(NOSTDLIB) $(NOBUILTIN) $(OPTMIZATION) #$(LIBS) 
 all:
 	#$(CROSS_COMPILE)gcc -c -g -fPIC boot_mon_spi.S  -o boot_mon_spi.o
 	$(CROSS_COMPILE)gcc -c -g  $(CFLAGS) -fPIC start.S  -o start.o

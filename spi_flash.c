@@ -570,9 +570,10 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 		goto err_manufacturer_probe;
 	}
 
-	printf("SF: Detected %s with page size =%x\n", flash->name,flash->page_size);
-	printf("flash->sector_size=%x\n",flash->sector_size);
-	printf("flash->size = %x\n",flash->size);
+	printf("SF: Detected %s with page size =0x%x,%dB\n",
+		flash->name,flash->page_size,flash->page_size);
+	printf("flash->sector_size=0x%x,%dKB\n",flash->sector_size,flash->sector_size/1024);
+	printf("flash->size = 0x%x, %dMB\n",flash->size,flash->size/1024/1024);
 
 	spi_release_bus(spi);
 
