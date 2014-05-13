@@ -54,6 +54,12 @@ typedef uint16_t __u16;
 typedef uint32_t __u32;
 typedef unsigned int uint;
 
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+
+
 #define uswap_16(x) \
 	((((x) & 0xff00) >> 8) | \
 	 (((x) & 0x00ff) << 8))

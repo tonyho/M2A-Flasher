@@ -26,12 +26,28 @@
  * MA 02111-1307 USA
  */
 
-#include <common.h>
-#include <malloc.h>
-#include <spi_flash.h>
+#include "common.h"
+//#include <malloc.h>
+#include "spi_flash.h"
 
 #include "spi_flash_internal.h"
 
+//extern int printf( const char* format, ...);
+
+
+/*!!FixMe!!*/
+#define CONFIG_SPI_FLASH_QUAD
+/*!!FixMe!! End*/
+
+extern struct spi_flash flash_instance;
+
+#if 0
+#ifdef DEBUG
+#define debug(fmt,args...) printf(fmt,##args)
+#else
+#define debug(fmt,args...)
+#endif
+#endif
 struct spansion_spi_flash_params {
 	u16 idcode1;
 	u16 idcode2;
@@ -163,12 +179,15 @@ struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
 
 	if (i == ARRAY_SIZE(spansion_spi_flash_table)) {
 		debug("SF: Unsupported SPANSION ID %04x %04x\n", jedec, ext_jedec);
+		printf("SF: Unsupported SPANSION ID %04x %04x\n", jedec, ext_jedec);
 		return NULL;
 	}
 
-	flash = malloc(sizeof(*flash));
+	//flash = malloc(sizeof(*flash));
+	flash = &flash_instance;
 	if (!flash) {
 		debug("SF: Failed to allocate memory\n");
+		printf("SF: Failed to allocate memory\n");
 		return NULL;
 	}
 

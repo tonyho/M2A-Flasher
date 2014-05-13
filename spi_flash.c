@@ -8,13 +8,24 @@
  * Licensed under the GPL-2 or later.
  */
 
-#include <common.h>
-#include <malloc.h>
-#include <spi.h>
-#include <spi_flash.h>
-#include <watchdog.h>
+#include "common.h"
+//#include <malloc.h>
+#include "spi.h"
+#include "spi_flash.h"
+//#include <watchdog.h>
 
 #include "spi_flash_internal.h"
+
+//extern int printf( const char* format, ...);
+
+
+/*!!FixMe!! Move to config.h*/
+//#define  CONFIG_SPI_FLASH_MACRONIX
+#define CONFIG_SPI_FLASH_SPANSION
+/*!!FixMe!! End*/
+ 
+struct spi_flash flash_instance;
+
 
 static void spi_flash_addr(u32 addr, u8 *cmd)
 {
@@ -100,10 +111,16 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 	int ret;
 	u8 cmd[4];
 
+	if(256 == flash->page_size){
+		page_size = 256;
+		page_addr = offset / 256;
+		byte_addr = offset % 256;
+	}
+#if 0	
 	page_size = flash->page_size;
 	page_addr = offset / page_size;
 	byte_addr = offset % page_size;
-
+#endif
 	ret = spi_claim_bus(flash->spi);
 	if (ret) {
 		debug("SF: unable to claim SPI bus\n");
@@ -157,8 +174,14 @@ int spi_flash_cmd_write_quad(struct spi_flash *flash, u32 offset,
 	int ret;
 	u8 cmd[5];
 
+	if(256 == flash->page_size){
+		page_size = 256;
+		byte_addr = offset % 256;
+	}
+#if 0	
 	page_size = flash->page_size;
 	byte_addr = offset % page_size;
+#endif
 
 	ret = spi_claim_bus(flash->spi);
 	if (ret) {
@@ -248,6 +271,7 @@ int spi_flash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 	unsigned long timebase;
 	int ret;
 	u8 status;
+	unsigned long Timeout4Polling = 10;
 
 	ret = spi_xfer(spi, 8, &cmd, NULL, SPI_XFER_BEGIN);
 	if (ret) {
@@ -255,9 +279,9 @@ int spi_flash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 		return ret;
 	}
 
-	timebase = get_timer(0);
+	//timebase = get_timer(0);
 	do {
-		WATCHDOG_RESET();
+		//WATCHDOG_RESET();
 
 		ret = spi_xfer(spi, 8, NULL, &status, 0);
 		if (ret)
@@ -265,8 +289,9 @@ int spi_flash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 
 		if ((status & poll_bit) == 0)
 			break;
-
-	} while (get_timer(timebase) < timeout);
+		udelay(Timeout4Polling);
+	//} while (get_timer(timebase) < timeout);
+	} while (Timeout4Polling);
 
 	spi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);
 
@@ -291,10 +316,14 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 	u8 cmd[4];
 
 	erase_size = flash->sector_size;
+/*!!FixMe!!*/
+#if 0
 	if (offset % erase_size || len % erase_size) {
 		debug("SF: Erase offset/length not multiple of erase size\n");
 		return -1;
 	}
+#endif
+/*!!FixMe!! End*/
 
 	ret = spi_claim_bus(flash->spi);
 	if (ret) {
@@ -347,11 +376,13 @@ int spi_flash_cmd_erase_quad(struct spi_flash *flash, u32 offset, size_t len)
 	u8 cmd[5];
 
 	erase_size = flash->sector_size;
+/*!!FixMe!!*/
+#if 0
 	if (offset % erase_size || len % erase_size) {
 		debug("SF: Erase offset/length not multiple of erase size\n");
 		return -1;
 	}
-
+#endif
 	ret = spi_claim_bus(flash->spi);
 	if (ret) {
 		debug("SF: Unable to claim SPI bus\n");
@@ -444,6 +475,7 @@ int spi_flash_cmd_write_status(struct spi_flash *flash, u8 sr)
  * manu id byte (the "idcode" in the table below).  In other words,
  * all of the continuation bytes will be skipped (the "shift" below).
  */
+ 
 #define IDCODE_CONT_LEN 0
 #define IDCODE_PART_LEN 5
 static const struct {
@@ -492,7 +524,7 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 		unsigned int max_hz, unsigned int spi_mode)
 {
 	struct spi_slave *spi;
-	struct spi_flash *flash = NULL;
+	struct spi_flash *flash = NULL;//&flash_instance;
 	int ret, i, shift;
 	u8 idcode[IDCODE_LEN], *idp;
 
@@ -538,9 +570,9 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 		goto err_manufacturer_probe;
 	}
 
-	printf("SF: Detected %s with page size ", flash->name);
-	print_size(flash->sector_size, ", total ");
-	print_size(flash->size, "\n");
+	printf("SF: Detected %s with page size =%x\n", flash->name,flash->page_size);
+	printf("flash->sector_size=%x\n",flash->sector_size);
+	printf("flash->size = %x\n",flash->size);
 
 	spi_release_bus(spi);
 
@@ -557,5 +589,5 @@ err_claim_bus:
 void spi_flash_free(struct spi_flash *flash)
 {
 	spi_free_slave(flash->spi);
-	free(flash);
+	//free(flash);
 }

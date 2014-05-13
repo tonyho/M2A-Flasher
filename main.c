@@ -7,7 +7,7 @@
 
 //#include<stdio.h>
 #include<unistd.h>
-#include<string.h>
+//#include<string.h>
 #include"cpu.h"
 #include"serial_sh.h"
 
@@ -65,6 +65,7 @@ void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned in
 int main(int argc, char * argv[]){
     int ret, input;
     struct spi_slave *pSpiSlave = NULL;
+    struct spi_flash *spi_flash_new;
 #ifdef TEST_LED_KOELSCH
     volatile unsigned long *pGP2 = (volatile unsigned long *)GPIO2_VALUE;
 #endif
@@ -103,11 +104,18 @@ int main(int argc, char * argv[]){
     //printf("LEDbase=%x\n",0x80000000);
     //printf("LEDbase=%x\n",0x8034c6bf);
     //printf("LEDbase=%d\n",0x8034c6bf);
-    printf("LEDbase=%s\n","hello");
+    printf("Please hit a key to continue:\n");
     input = sh_serial_getc();
     printf("input=%c\n",input);
     GpioOutput(LED_GPIO_BASE,LED7,LED_ON);
-    pSpiSlave = spi_setup_slave(0, 0,0,0);
+	//    pSpiSlave = spi_setup_slave(0, 0,0,0);
+    
+	
+	spi_flash_new = spi_flash_probe(0, 0, 0, 0);
+	if (!spi_flash_new) {
+		printf("Failed to initialize SPI flash at %u:%u\n", 0, 0);
+		return 1;
+	}
     return 0;
 }
 

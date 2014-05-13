@@ -9,6 +9,9 @@
  * is a problem (and well your system already is broken), so err on the side
  * of caution in case we're dealing with slower SPI buses and/or processors.
  */
+ /*!!FixMe!!*/
+ #define CONFIG_SYS_HZ 1000
+  /*!!FixMe!!End*/
 #define SPI_FLASH_PROG_TIMEOUT		(2 * CONFIG_SYS_HZ)
 #define SPI_FLASH_PAGE_ERASE_TIMEOUT	(5 * CONFIG_SYS_HZ)
 #define SPI_FLASH_SECTOR_ERASE_TIMEOUT	(10 * CONFIG_SYS_HZ)
