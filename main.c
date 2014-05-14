@@ -62,8 +62,13 @@ struct Gpio_Regs {
 void somedelay(unsigned long delay);
 void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned int HL);
 
+unsigned char buf[512];
+
 int main(int argc, char * argv[]){
     int ret, input;
+//    unsigned char buf[512];
+	int Count4Printf;
+  
     struct spi_slave *pSpiSlave = NULL;
     struct spi_flash *spi_flash_new;
 #ifdef TEST_LED_KOELSCH
@@ -116,6 +121,19 @@ int main(int argc, char * argv[]){
 		printf("Failed to initialize SPI flash at %u:%u\n", 0, 0);
 		return 1;
 	}
+	ret = spi_flash_read(spi_flash_new, 0, 512, buf);
+	if (ret) {
+		printf("SPI flash read failed\n");
+		return 1;
+	}
+	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
+		if(Count4Printf%10==0){
+			printf("\n");
+		}
+		printf("%xH=[%xH] ",Count4Printf,buf[Count4Printf]);
+
+	}
+	printf("\n");
     return 0;
 }
 

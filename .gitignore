@@ -6,4 +6,5 @@
 *.o
 *.dis
 *.swo
+*.map
 Flasher

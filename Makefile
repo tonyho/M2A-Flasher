@@ -21,6 +21,7 @@ all:
 	$(CROSS_COMPILE)objdump -d Flasher > Flasher.dis
 	$(CROSS_COMPILE)objcopy --output-target=binary Flasher Flasher.bin
 	$(CROSS_COMPILE)objcopy --output-target=srec Flasher Flasher.srec
+	$(CROSS_COMPILE)nm Flasher | grep -v '\(compiled\)\|\(\.o$$\)\|\( [aUw] \)\|\(\.\.ng$$\)\|\(LASH[RL]DI\)' | LC_ALL=C sort > System.map
 	cp Flasher.srec ~/Share/
 install:	
 	cp Flasher.srec ~/Share/

@@ -74,13 +74,15 @@ static int spi_flash_read_write(struct spi_slave *spi,
 
 	ret = spi_xfer(spi, cmd_len * 8, cmd, NULL, flags);
 	if (ret) {
-		debug("SF: Failed to send command (%zu bytes): %d\n",
+		debug("SF: Failed to send command (%d bytes): %d\n",
+				cmd_len, ret);
+		printf("SF: 1. Failed to send command (%d bytes): %d\n",
 				cmd_len, ret);
 	} else if (data_len != 0) {
 		ret = spi_xfer(spi, data_len * 8, data_out, data_in, SPI_XFER_END);
 		if (ret)
-			debug("SF: Failed to transfer %zu bytes of data: %d\n",
-					data_len, ret);
+			debug("SF: Failed to transfer %d bytes of data: %d\n",
+					data_len, ret);	
 	}
 
 	return ret;
@@ -520,6 +522,24 @@ static const struct {
 };
 #define IDCODE_LEN (IDCODE_CONT_LEN + IDCODE_PART_LEN)
 
+int spi_flash_read(struct spi_flash *flash, u32 offset,
+		size_t len, void *buf)
+{
+	return flash->read(flash, offset, len, buf);
+}
+
+int spi_flash_write(struct spi_flash *flash, u32 offset,
+		size_t len, const void *buf)
+{
+	return flash->write(flash, offset, len, buf);
+}
+
+ int spi_flash_erase(struct spi_flash *flash, u32 offset,
+		size_t len)
+{
+	return flash->erase(flash, offset, len);
+}
+
 struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 		unsigned int max_hz, unsigned int spi_mode)
 {
@@ -527,6 +547,7 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 	struct spi_flash *flash = NULL;//&flash_instance;
 	int ret, i, shift;
 	u8 idcode[IDCODE_LEN], *idp;
+	unsigned int Counter4IDCode = 0;
 
 	spi = spi_setup_slave(bus, cs, max_hz, spi_mode);
 	if (!spi) {
@@ -546,9 +567,14 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 		goto err_read_id;
 
 #ifdef DEBUG
-	printf("SF: Got idcodes\n");
-	print_buffer(0, idcode, 1, sizeof(idcode), 0);
+//	printf("SF: Got idcodes\n");
+//	print_buffer(0, idcode, 1, sizeof(idcode), 0);
 #endif
+	printf("SF: Got idcodes: \n");
+	for(Counter4IDCode=0;Counter4IDCode<IDCODE_LEN; Counter4IDCode++){
+		printf("idcode[%d]=0x%x  ",Counter4IDCode,idcode[Counter4IDCode]);
+	}
+	printf("\n");
 
 	/* count the number of continuation bytes */
 	for (shift = 0, idp = idcode;

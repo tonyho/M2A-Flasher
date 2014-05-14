@@ -111,7 +111,7 @@ typedef volatile unsigned char	vu_char;
 //#include <part.h>
 //#include <flash.h>
 //#include <image.h>
-
+#define DEBUG
 #ifdef DEBUG
 #define _DEBUG	1
 #else
@@ -123,6 +123,7 @@ typedef volatile unsigned char	vu_char;
  * computed by a preprocessor in the best case, allowing for the best
  * optimization.
  */
+ #if 1
 #define debug_cond(cond, fmt, args...)		\
 	do {					\
 		if (cond)			\
@@ -131,6 +132,9 @@ typedef volatile unsigned char	vu_char;
 
 #define debug(fmt, args...)			\
 	debug_cond(_DEBUG, fmt, ##args)
+#endif
+
+
 
 /*
  * An assertion is run-time check done in debug mode only. If DEBUG is not

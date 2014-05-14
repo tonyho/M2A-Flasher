@@ -340,7 +340,7 @@ int spi_xfer(
 	}
 
 	if (bitlen % 8) {
-		DEBUG_LOG("spi_xfer: bitlen is not 8bit alined %d", bitlen);
+		debug("spi_xfer: bitlen is not 8bit alined %d", bitlen);
 		return 1;
 	}
 
