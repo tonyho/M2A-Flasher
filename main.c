@@ -115,12 +115,56 @@ int main(int argc, char * argv[]){
     GpioOutput(LED_GPIO_BASE,LED7,LED_ON);
 	//    pSpiSlave = spi_setup_slave(0, 0,0,0);
     
-	
+	printf("Test probe..........................\n");
 	spi_flash_new = spi_flash_probe(0, 0, 0, 0);
 	if (!spi_flash_new) {
 		printf("Failed to initialize SPI flash at %u:%u\n", 0, 0);
 		return 1;
 	}
+	for(Count4Printf=0; Count4Printf<512; Count4Printf++){
+		buf[Count4Printf] = 0x12;
+	}
+	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
+		if(Count4Printf%10==0){
+			printf("\n");
+		}
+		printf("%xH=[%xH] ",Count4Printf,buf[Count4Printf]);
+
+	}
+	printf("\n");
+#if 0
+	printf("Test Erase..........................\n");
+	ret = spi_flash_erase(spi_flash_new,8192,4096);
+	if (ret) {
+		printf("SPI flash erase failed\n");
+		return 1;
+	}
+
+	printf("Test Write..........................\n");
+	ret = spi_flash_write(spi_flash_new, 8192, 512, buf);
+	if (ret) {
+		printf("SPI flash write failed\n");
+		return 1;
+	}
+#endif
+	printf("Test Read..........................\n");
+	ret = spi_flash_read(spi_flash_new, 8192, 512, buf);
+	if (ret) {
+		printf("SPI flash read failed\n");
+		return 1;
+	}
+	udelay(3);
+	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
+		if(Count4Printf%10==0){
+			printf("\n");
+		}
+		printf("%xH=[%xH] ",Count4Printf,buf[Count4Printf]);
+
+	}
+	printf("\n");
+
+	udelay(3);
+	printf("Test Read..........................\n");
 	ret = spi_flash_read(spi_flash_new, 0, 512, buf);
 	if (ret) {
 		printf("SPI flash read failed\n");

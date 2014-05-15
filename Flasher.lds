@@ -3,8 +3,8 @@ OUTPUT_ARCH(arm)
 ENTRY(Init_set_WDT)
 SECTIONS
 {
-/*. = 0xe6304000;*/
- . =    0x50000000;
+. = 0xe6304000;
+/* . =    0x50000000;*/
  . = ALIGN(4);
  .text :
  {

@@ -29,6 +29,7 @@
 struct sh_qspi ss_instance;
 
 /*!!FixMe!! Use the serial_output instead of the null*/
+#define DEBUG
 #ifdef DEBUG
 #define DEBUG_LOG(fmt,args...) printf(fmt,##args) 
 #else
@@ -340,7 +341,7 @@ int spi_xfer(
 	}
 
 	if (bitlen % 8) {
-		debug("spi_xfer: bitlen is not 8bit alined %d", bitlen);
+		DEBUG_LOG("spi_xfer: bitlen is not 8bit alined %d", bitlen);
 		return 1;
 	}
 

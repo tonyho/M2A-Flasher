@@ -73,6 +73,7 @@ static int spi_flash_read_write(struct spi_slave *spi,
 		flags |= SPI_XFER_END;
 
 	ret = spi_xfer(spi, cmd_len * 8, cmd, NULL, flags);
+	printf("spi_xfer ret=%d,cmd[0]=0x%x\n",ret,cmd[0]);
 	if (ret) {
 		debug("SF: Failed to send command (%d bytes): %d\n",
 				cmd_len, ret);
@@ -80,9 +81,12 @@ static int spi_flash_read_write(struct spi_slave *spi,
 				cmd_len, ret);
 	} else if (data_len != 0) {
 		ret = spi_xfer(spi, data_len * 8, data_out, data_in, SPI_XFER_END);
-		if (ret)
+		if (ret){
 			debug("SF: Failed to transfer %d bytes of data: %d\n",
 					data_len, ret);	
+			printf("SF: Failed to transfer %d bytes of data: %d\n",
+					data_len, ret);
+		}
 	}
 
 	return ret;
@@ -117,6 +121,9 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 		page_size = 256;
 		page_addr = offset / 256;
 		byte_addr = offset % 256;
+	}
+	else{
+		printf("page size %dByte not supported, add it!!",flash->page_size);
 	}
 #if 0	
 	page_size = flash->page_size;
@@ -161,7 +168,7 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 		byte_addr = 0;
 	}
 
-	debug("SF: program %s %zu bytes @ %#x\n",
+	debug("SF: Multi program %s %d bytes @ 0x%x\n",
 	      ret ? "failure" : "success", len, offset);
 
 	spi_release_bus(flash->spi);
@@ -197,8 +204,8 @@ int spi_flash_cmd_write_quad(struct spi_flash *flash, u32 offset,
 
 		spi_flash_addr4(offset + actual, cmd);
 
-		debug("Q4PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x%02x } " \
-		      "len = %zu\n",
+		debug("Q4PP: 0x%x => cmd = { 0x%x 0x%x 0x%x 0x%x  0x%x } " \
+		      "len = %d\n",
 		      buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], cmd[4],
 		      chunk_len);
 
@@ -222,7 +229,7 @@ int spi_flash_cmd_write_quad(struct spi_flash *flash, u32 offset,
 		byte_addr = 0;
 	}
 
-	debug("SF: program %s %zu bytes @ %#x\n",
+	debug("SF: Quad program %s %d bytes @ 0x%x\n",
 	      ret ? "failure" : "success", len, offset);
 
 	spi_release_bus(flash->spi);
@@ -286,14 +293,19 @@ int spi_flash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 		//WATCHDOG_RESET();
 
 		ret = spi_xfer(spi, 8, NULL, &status, 0);
-		if (ret)
+		if (ret){
+			printf("spi_xfer Error ret=%d\n",ret);
 			return -1;
+		}
 
 		if ((status & poll_bit) == 0)
 			break;
-		udelay(Timeout4Polling);
+		//udelay(Timeout4Polling--);
+		udelay(1);
 	//} while (get_timer(timebase) < timeout);
-	} while (Timeout4Polling);
+//	} while (Timeout4Polling);
+	} while (1);
+
 
 	spi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);
 
@@ -344,7 +356,7 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 		spi_flash_addr(offset, cmd);
 		offset += erase_size;
 
-		debug("SF: erase %2x %2x %2x %2x (%x)\n", cmd[0], cmd[1],
+		debug("SF: erase 0x%x 0x%x 0x%x 0x%x (0x%x)\n", cmd[0], cmd[1],
 		      cmd[2], cmd[3], offset);
 
 		ret = spi_flash_cmd_write_enable(flash);
@@ -403,7 +415,7 @@ int spi_flash_cmd_erase_quad(struct spi_flash *flash, u32 offset, size_t len)
 	while (offset < end) {
 		spi_flash_addr4(offset, cmd);
 
-		debug("SF: erase %2x %2x %2x %2x %2x (%x)\n", cmd[0], cmd[1],
+		debug("SF: Quad erase 0x%x 0x%x 0x%x 0x%x 0x%x (0x%x)\n", cmd[0], cmd[1],
 		      cmd[2], cmd[3], cmd[4], offset);
 
 		ret = spi_flash_cmd_write_enable(flash);

@@ -17,12 +17,13 @@ all:
 	$(CROSS_COMPILE)gcc -c -g  $(CFLAGS) spansion.c  -o spansion.o $(INCS)
 	$(CROSS_COMPILE)gcc -c -g  $(CFLAGS) serial_sh.c  -o serial_sh.o $(INCS)
 	$(CROSS_COMPILE)ld -TFlasher.lds start.o main.o  sh_qspi.o spi_flash.o serial_sh.o spansion.o -o Flasher 
-	$(CROSS_COMPILE)objdump -d start.o > start.dis
-	$(CROSS_COMPILE)objdump -d Flasher > Flasher.dis
+	$(CROSS_COMPILE)objdump -d -S start.o > start.dis
+	$(CROSS_COMPILE)objdump -d -S Flasher > Flasher.dis
 	$(CROSS_COMPILE)objcopy --output-target=binary Flasher Flasher.bin
 	$(CROSS_COMPILE)objcopy --output-target=srec Flasher Flasher.srec
 	$(CROSS_COMPILE)nm Flasher | grep -v '\(compiled\)\|\(\.o$$\)\|\( [aUw] \)\|\(\.\.ng$$\)\|\(LASH[RL]DI\)' | LC_ALL=C sort > System.map
 	cp Flasher.srec ~/Share/
+	scp -r ../Flasher hexiongjun@hexiongjun-DELL:~/SmartAuto/
 install:	
 	cp Flasher.srec ~/Share/
 clean:

@@ -131,7 +131,9 @@ typedef volatile unsigned char	vu_char;
 	} while (0)
 
 #define debug(fmt, args...)			\
-	debug_cond(_DEBUG, fmt, ##args)
+	debug_cond(1, fmt, ##args)
+	//	debug_cond(_DEBUG, fmt, ##args)
+
 #endif
 
 
