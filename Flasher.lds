@@ -1,6 +1,7 @@
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
-ENTRY(Init_set_WDT)
+/*ENTRY(Init_set_WDT)*/
+ENTRY(_start)
 SECTIONS
 {
 . = 0xe6304000;

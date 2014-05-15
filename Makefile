@@ -23,9 +23,10 @@ all:
 	$(CROSS_COMPILE)objcopy --output-target=srec Flasher Flasher.srec
 	$(CROSS_COMPILE)nm Flasher | grep -v '\(compiled\)\|\(\.o$$\)\|\( [aUw] \)\|\(\.\.ng$$\)\|\(LASH[RL]DI\)' | LC_ALL=C sort > System.map
 	cp Flasher.srec ~/Share/
-	scp -r ../Flasher hexiongjun@hexiongjun-DELL:~/SmartAuto/
+	
 install:	
 	cp Flasher.srec ~/Share/
+	scp -r ../Flasher hexiongjun@hexiongjun-DELL:~/SmartAuto/
 clean:
 	-rm *.bin
 	-rm *.srec

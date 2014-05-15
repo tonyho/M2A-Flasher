@@ -9,6 +9,8 @@
 #include<unistd.h>
 //#include<string.h>
 #include"cpu.h"
+#include"io.h"
+#include"r8a7791.h"
 #include"serial_sh.h"
 
 #define LED6 19
@@ -62,7 +64,1567 @@ struct Gpio_Regs {
 void somedelay(unsigned long delay);
 void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned int HL);
 
+/* QoS version 0.23 */
+
+enum {
+	DBSC3_00, DBSC3_01, DBSC3_02, DBSC3_03, DBSC3_04,
+	DBSC3_05, DBSC3_06, DBSC3_07, DBSC3_08, DBSC3_09,
+	DBSC3_10, DBSC3_11, DBSC3_12, DBSC3_13, DBSC3_14,
+	DBSC3_15,
+	DBSC3_NR,
+};
+
+static u32 dbsc3_0_r_qos_addr[DBSC3_NR] = {
+	[DBSC3_00] = DBSC3_0_QOS_R0_BASE,
+	[DBSC3_01] = DBSC3_0_QOS_R1_BASE,
+	[DBSC3_02] = DBSC3_0_QOS_R2_BASE,
+	[DBSC3_03] = DBSC3_0_QOS_R3_BASE,
+	[DBSC3_04] = DBSC3_0_QOS_R4_BASE,
+	[DBSC3_05] = DBSC3_0_QOS_R5_BASE,
+	[DBSC3_06] = DBSC3_0_QOS_R6_BASE,
+	[DBSC3_07] = DBSC3_0_QOS_R7_BASE,
+	[DBSC3_08] = DBSC3_0_QOS_R8_BASE,
+	[DBSC3_09] = DBSC3_0_QOS_R9_BASE,
+	[DBSC3_10] = DBSC3_0_QOS_R10_BASE,
+	[DBSC3_11] = DBSC3_0_QOS_R11_BASE,
+	[DBSC3_12] = DBSC3_0_QOS_R12_BASE,
+	[DBSC3_13] = DBSC3_0_QOS_R13_BASE,
+	[DBSC3_14] = DBSC3_0_QOS_R14_BASE,
+	[DBSC3_15] = DBSC3_0_QOS_R15_BASE,
+};
+
+static u32 dbsc3_0_w_qos_addr[DBSC3_NR] = {
+	[DBSC3_00] = DBSC3_0_QOS_W0_BASE,
+	[DBSC3_01] = DBSC3_0_QOS_W1_BASE,
+	[DBSC3_02] = DBSC3_0_QOS_W2_BASE,
+	[DBSC3_03] = DBSC3_0_QOS_W3_BASE,
+	[DBSC3_04] = DBSC3_0_QOS_W4_BASE,
+	[DBSC3_05] = DBSC3_0_QOS_W5_BASE,
+	[DBSC3_06] = DBSC3_0_QOS_W6_BASE,
+	[DBSC3_07] = DBSC3_0_QOS_W7_BASE,
+	[DBSC3_08] = DBSC3_0_QOS_W8_BASE,
+	[DBSC3_09] = DBSC3_0_QOS_W9_BASE,
+	[DBSC3_10] = DBSC3_0_QOS_W10_BASE,
+	[DBSC3_11] = DBSC3_0_QOS_W11_BASE,
+	[DBSC3_12] = DBSC3_0_QOS_W12_BASE,
+	[DBSC3_13] = DBSC3_0_QOS_W13_BASE,
+	[DBSC3_14] = DBSC3_0_QOS_W14_BASE,
+	[DBSC3_15] = DBSC3_0_QOS_W15_BASE,
+};
+
+static u32 dbsc3_1_r_qos_addr[DBSC3_NR] = {
+	[DBSC3_00] = DBSC3_1_QOS_R0_BASE,
+	[DBSC3_01] = DBSC3_1_QOS_R1_BASE,
+	[DBSC3_02] = DBSC3_1_QOS_R2_BASE,
+	[DBSC3_03] = DBSC3_1_QOS_R3_BASE,
+	[DBSC3_04] = DBSC3_1_QOS_R4_BASE,
+	[DBSC3_05] = DBSC3_1_QOS_R5_BASE,
+	[DBSC3_06] = DBSC3_1_QOS_R6_BASE,
+	[DBSC3_07] = DBSC3_1_QOS_R7_BASE,
+	[DBSC3_08] = DBSC3_1_QOS_R8_BASE,
+	[DBSC3_09] = DBSC3_1_QOS_R9_BASE,
+	[DBSC3_10] = DBSC3_1_QOS_R10_BASE,
+	[DBSC3_11] = DBSC3_1_QOS_R11_BASE,
+	[DBSC3_12] = DBSC3_1_QOS_R12_BASE,
+	[DBSC3_13] = DBSC3_1_QOS_R13_BASE,
+	[DBSC3_14] = DBSC3_1_QOS_R14_BASE,
+	[DBSC3_15] = DBSC3_1_QOS_R15_BASE,
+};
+
+static u32 dbsc3_1_w_qos_addr[DBSC3_NR] = {
+	[DBSC3_00] = DBSC3_1_QOS_W0_BASE,
+	[DBSC3_01] = DBSC3_1_QOS_W1_BASE,
+	[DBSC3_02] = DBSC3_1_QOS_W2_BASE,
+	[DBSC3_03] = DBSC3_1_QOS_W3_BASE,
+	[DBSC3_04] = DBSC3_1_QOS_W4_BASE,
+	[DBSC3_05] = DBSC3_1_QOS_W5_BASE,
+	[DBSC3_06] = DBSC3_1_QOS_W6_BASE,
+	[DBSC3_07] = DBSC3_1_QOS_W7_BASE,
+	[DBSC3_08] = DBSC3_1_QOS_W8_BASE,
+	[DBSC3_09] = DBSC3_1_QOS_W9_BASE,
+	[DBSC3_10] = DBSC3_1_QOS_W10_BASE,
+	[DBSC3_11] = DBSC3_1_QOS_W11_BASE,
+	[DBSC3_12] = DBSC3_1_QOS_W12_BASE,
+	[DBSC3_13] = DBSC3_1_QOS_W13_BASE,
+	[DBSC3_14] = DBSC3_1_QOS_W14_BASE,
+	[DBSC3_15] = DBSC3_1_QOS_W15_BASE,
+};
+
+void qos_init(void)
+{
+	int i;
+	struct r8a7791_s3c *s3c;
+	struct r8a7791_s3c_qos *s3c_qos;
+	struct r8a7791_dbsc3_qos *qos_addr;
+	struct r8a7791_mxi *mxi;
+	struct r8a7791_mxi_qos *mxi_qos;
+	struct r8a7791_axi_qos *axi_qos;
+
+	/* DBSC DBADJ2 */
+	writel(0x20042004, DBSC3_0_DBADJ2);
+
+	/* S3C -QoS */
+	s3c = (struct r8a7791_s3c *)S3C_BASE;
+	writel(0x00FF1B1D, &s3c->s3cadsplcr);
+	writel(0x1F0D0C0C, &s3c->s3crorr);
+	writel(0x1F0D0C0A, &s3c->s3cworr);
+
+	/* QoS Control Registers */
+	s3c_qos = (struct r8a7791_s3c_qos *)S3C_QOS_CCI0_BASE;
+	writel(0x00890089, &s3c_qos->s3cqos0);
+	writel(0x20960010, &s3c_qos->s3cqos1);
+	writel(0x20302030, &s3c_qos->s3cqos2);
+	writel(0x20AA2200, &s3c_qos->s3cqos3);
+	writel(0x00002032, &s3c_qos->s3cqos4);
+	writel(0x20960010, &s3c_qos->s3cqos5);
+	writel(0x20302030, &s3c_qos->s3cqos6);
+	writel(0x20AA2200, &s3c_qos->s3cqos7);
+	writel(0x00002032, &s3c_qos->s3cqos8);
+
+	s3c_qos = (struct r8a7791_s3c_qos *)S3C_QOS_CCI1_BASE;
+	writel(0x00890089, &s3c_qos->s3cqos0);
+	writel(0x20960010, &s3c_qos->s3cqos1);
+	writel(0x20302030, &s3c_qos->s3cqos2);
+	writel(0x20AA2200, &s3c_qos->s3cqos3);
+	writel(0x00002032, &s3c_qos->s3cqos4);
+	writel(0x20960010, &s3c_qos->s3cqos5);
+	writel(0x20302030, &s3c_qos->s3cqos6);
+	writel(0x20AA2200, &s3c_qos->s3cqos7);
+	writel(0x00002032, &s3c_qos->s3cqos8);
+
+	s3c_qos = (struct r8a7791_s3c_qos *)S3C_QOS_MXI_BASE;
+	writel(0x00820082, &s3c_qos->s3cqos0);
+	writel(0x20960020, &s3c_qos->s3cqos1);
+	writel(0x20302030, &s3c_qos->s3cqos2);
+	writel(0x20AA20DC, &s3c_qos->s3cqos3);
+	writel(0x00002032, &s3c_qos->s3cqos4);
+	writel(0x20960020, &s3c_qos->s3cqos5);
+	writel(0x20302030, &s3c_qos->s3cqos6);
+	writel(0x20AA20DC, &s3c_qos->s3cqos7);
+	writel(0x00002032, &s3c_qos->s3cqos8);
+
+	s3c_qos = (struct r8a7791_s3c_qos *)S3C_QOS_AXI_BASE;
+	writel(0x00820082, &s3c_qos->s3cqos0);
+	writel(0x20960020, &s3c_qos->s3cqos1);
+	writel(0x20302030, &s3c_qos->s3cqos2);
+	writel(0x20AA20FA, &s3c_qos->s3cqos3);
+	writel(0x00002032, &s3c_qos->s3cqos4);
+	writel(0x20960020, &s3c_qos->s3cqos5);
+	writel(0x20302030, &s3c_qos->s3cqos6);
+	writel(0x20AA20FA, &s3c_qos->s3cqos7);
+	writel(0x00002032, &s3c_qos->s3cqos8);
+
+	/* DBSC -QoS */
+	/* DBSC0 - Read */
+	for (i = DBSC3_00; i < DBSC3_NR; i++) {
+		qos_addr = (struct r8a7791_dbsc3_qos *)dbsc3_0_r_qos_addr[i];
+		writel(0x00000002, &qos_addr->dblgcnt);
+		writel(0x00002096, &qos_addr->dbtmval0);
+		writel(0x00002064, &qos_addr->dbtmval1);
+		writel(0x00002032, &qos_addr->dbtmval2);
+		writel(0x00001FB0, &qos_addr->dbtmval3);
+		writel(0x00000001, &qos_addr->dbrqctr);
+		writel(0x00002078, &qos_addr->dbthres0);
+		writel(0x0000204B, &qos_addr->dbthres1);
+		writel(0x00001FE7, &qos_addr->dbthres2);
+		writel(0x00000001, &qos_addr->dblgqon);
+	}
+
+	/* DBSC0 - Write */
+	for (i = DBSC3_00; i < DBSC3_NR; i++) {
+		qos_addr = (struct r8a7791_dbsc3_qos *)dbsc3_0_w_qos_addr[i];
+		writel(0x00000002, &qos_addr->dblgcnt);
+		writel(0x000020EB, &qos_addr->dbtmval0);
+		writel(0x0000206E, &qos_addr->dbtmval1);
+		writel(0x00002050, &qos_addr->dbtmval2);
+		writel(0x0000203A, &qos_addr->dbtmval3);
+		writel(0x00000001, &qos_addr->dbrqctr);
+		writel(0x00002078, &qos_addr->dbthres0);
+		writel(0x0000205A, &qos_addr->dbthres1);
+		writel(0x0000203C, &qos_addr->dbthres2);
+		writel(0x00000001, &qos_addr->dblgqon);
+	}
+
+	/* DBSC1 - Read */
+	for (i = DBSC3_00; i < DBSC3_NR; i++) {
+		qos_addr = (struct r8a7791_dbsc3_qos *)dbsc3_1_r_qos_addr[i];
+		writel(0x00000002, &qos_addr->dblgcnt);
+		writel(0x00002096, &qos_addr->dbtmval0);
+		writel(0x00002064, &qos_addr->dbtmval1);
+		writel(0x00002032, &qos_addr->dbtmval2);
+		writel(0x00001FB0, &qos_addr->dbtmval3);
+		writel(0x00000001, &qos_addr->dbrqctr);
+		writel(0x00002078, &qos_addr->dbthres0);
+		writel(0x0000204B, &qos_addr->dbthres1);
+		writel(0x00001FE7, &qos_addr->dbthres2);
+		writel(0x00000001, &qos_addr->dblgqon);
+	}
+
+	/* DBSC1 - Write */
+	for (i = DBSC3_00; i < DBSC3_NR; i++) {
+		qos_addr = (struct r8a7791_dbsc3_qos *)dbsc3_1_w_qos_addr[i];
+		writel(0x00000002, &qos_addr->dblgcnt);
+		writel(0x000020EB, &qos_addr->dbtmval0);
+		writel(0x0000206E, &qos_addr->dbtmval1);
+		writel(0x00002050, &qos_addr->dbtmval2);
+		writel(0x0000203A, &qos_addr->dbtmval3);
+		writel(0x00000001, &qos_addr->dbrqctr);
+		writel(0x00002078, &qos_addr->dbthres0);
+		writel(0x0000205A, &qos_addr->dbthres1);
+		writel(0x0000203C, &qos_addr->dbthres2);
+		writel(0x00000001, &qos_addr->dblgqon);
+	}
+
+	/* CCI-400 -QoS */
+	writel(0x20001000, CCI_400_MAXOT_1);
+	writel(0x20001000, CCI_400_MAXOT_2);
+	writel(0x0000000C, CCI_400_QOSCNTL_1);
+	writel(0x0000000C, CCI_400_QOSCNTL_2);
+
+	/* MXI -QoS */
+	/* Transaction Control (MXI) */
+	mxi = (struct r8a7791_mxi *)MXI_BASE;
+	writel(0x00000013, &mxi->mxrtcr);
+	writel(0x00000013, &mxi->mxwtcr);
+	writel(0x00780080, &mxi->mxsaar0);
+	writel(0x02000800, &mxi->mxsaar1);
+
+	/* QoS Control (MXI) */
+	mxi_qos = (struct r8a7791_mxi_qos *)MXI_QOS_BASE;
+	writel(0x0000000C, &mxi_qos->vspdu0);
+	writel(0x0000000C, &mxi_qos->vspdu1);
+	writel(0x0000000D, &mxi_qos->du0);
+	writel(0x0000000D, &mxi_qos->du1);
+
+	/* AXI -QoS */
+	/* Transaction Control (MXI) */
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_SYX64TO128_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_AVB_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020A6, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_G2D_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020A6, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_IMP0_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002021, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_IMP1_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002037, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_IMUX0_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_IMUX1_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_IMUX2_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_LBS_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000214C, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MMUDS_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MMUM_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MMUR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MMUS0_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MMUS1_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MTSB0_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002021, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MTSB1_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002021, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_PCI_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000214C, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_RTX_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_SDS0_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020A6, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_SDS1_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020A6, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_USB20_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_USB21_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_USB22_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_USB30_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000214C, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_AX2M_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_CC50_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002029, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_CCI_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_CS_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_DDM_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020A6, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_ETH_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_MPXM_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_SAT0_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_SAT1_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_SDM0_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000214C, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_SDM1_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000214C, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_TRAB_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020A6, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_UDM0_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI_UDM1_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	/* QoS Register (RT-AXI) */
+	axi_qos = (struct r8a7791_axi_qos *)RT_AXI_SHX_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)RT_AXI_DBG_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)RT_AXI_RDM_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002299, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)RT_AXI_RDS_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002029, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)RT_AXI_RTX64TO128_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)RT_AXI_STPRO_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002029, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)RT_AXI_SY2RT_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	/* QoS Register (MP-AXI) */
+	axi_qos = (struct r8a7791_axi_qos *)MP_AXI_ADSP_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002037, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MP_AXI_ASDS0_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002014, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MP_AXI_ASDS1_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002014, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MP_AXI_MLP_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002014, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MP_AXI_MMUMP_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MP_AXI_SPU_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002053, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MP_AXI_SPUC_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000206E, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	/* QoS Register (SYS-AXI256) */
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI256_AXI128TO256_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI256_SYX_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI256_MPX_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)SYS_AXI256_MXI_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	/* QoS Register (CCI-AXI) */
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_MMUS0_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_SYX2_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_MMUR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_MMUDS_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_MMUM_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_MXI_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x00002245, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_MMUS1_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)CCI_AXI_MMUMP_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000000, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	/* QoS Register (Media-AXI) */
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_MXR_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x000020DC, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x000020AA, &axi_qos->qosthres0);
+	writel(0x00002032, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_MXW_BASE;
+	writel(0x00000002, &axi_qos->qosconf);
+	writel(0x000020DC, &axi_qos->qosctset0);
+	writel(0x00002096, &axi_qos->qosctset1);
+	writel(0x00002030, &axi_qos->qosctset2);
+	writel(0x00002030, &axi_qos->qosctset3);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x000020AA, &axi_qos->qosthres0);
+	writel(0x00002032, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_JPR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_JPW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+#if 0
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_GCU0R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_GCU0W_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_GCU1R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_GCU1W_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002004, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+#endif
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_TDMR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_TDMW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+#if 0
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP0CR_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002005, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP0CW_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002005, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+#endif
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP1CR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP1CW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPDU0CR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPDU0CW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPDU1CR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPDU1CW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002190, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VIN0W_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+#if 0
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP0R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002005, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP0W_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002007, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+#endif
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_FDP0R_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_FDP0W_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_IMSR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_IMSW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP1R_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSP1W_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_FDP1R_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_FDP1W_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_IMRR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_IMRW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+#if 0
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_FDP2R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000200F, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_FDP2W_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000200F, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+#endif
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPD0R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPD0W_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPD1R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VSPD1W_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x000020C8, &axi_qos->qosctset0);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_DU0R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002063, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_DU0W_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002063, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+#if 0
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_DU1R_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002002, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_DU1W_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002003, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+#endif
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP0CR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002073, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP0CW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002073, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP0VR_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002073, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP0VW_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002073, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VPC0R_BASE;
+	writel(0x00000001, &axi_qos->qosconf);
+	writel(0x00002073, &axi_qos->qosctset0);
+	writel(0x00000020, &axi_qos->qosreqctr);
+	writel(0x00002064, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00000001, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+#if 0
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP1CR_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002001, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP1CW_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002009, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP1VR_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000200F, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VCP1VW_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x0000200F, &axi_qos->qosctset0);
+	writel(0x00000001, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000001, &axi_qos->qosqon);
+
+	axi_qos = (struct r8a7791_axi_qos *)MEDIA_AXI_VPC1R_BASE;
+	writel(0x00000000, &axi_qos->qosconf);
+	writel(0x00002001, &axi_qos->qosctset0);
+	writel(0x00000000, &axi_qos->qosreqctr);
+	writel(0x00002006, &axi_qos->qosthres0);
+	writel(0x00002004, &axi_qos->qosthres1);
+	writel(0x00002002, &axi_qos->qosthres2);
+	writel(0x00000000, &axi_qos->qosqon);
+
+	/* CCI-AXI Function Register */
+	writel(0x00000011, CCI_AXI_IPMMUIDVMCR);
+	writel(0x00000011, CCI_AXI_IPMMURDVMCR);
+	writel(0x00000011, CCI_AXI_IPMMUS0DVMCR);
+	writel(0x00000011, CCI_AXI_IPMMUS1DVMCR);
+	writel(0x00000011, CCI_AXI_IPMMUMPDVMCR);
+	writel(0x00000011, CCI_AXI_IPMMUDSDVMCR);
+	writel(0x0000F700, CCI_AXI_AX2ADDRMASK);
+#endif
+}
+
+
+#define s_init_wait(cnt) \
+		({	\
+			volatile u32 i = 0x10000 * cnt;	\
+			while (i > 0)	\
+				i--;	\
+		})
+
+void s_init(void)
+{
+	struct r8a7791_rwdt *rwdt = (struct r8a7791_rwdt *)RWDT_BASE;
+	struct r8a7791_swdt *swdt = (struct r8a7791_swdt *)SWDT_BASE;
+	struct r8a7791_lbsc *lbsc = (struct r8a7791_lbsc *)LBSC_BASE;
+	struct r8a7791_dbsc3 *dbsc3_0 = (struct r8a7791_dbsc3 *)DBSC3_0_BASE;
+
+	/* Watchdog init */
+	writel(0xA5A5A500, &rwdt->rwtcsra);
+	writel(0xA5A5A500, &swdt->swtcsra);
+
+	/* QoS */
+	//qos_init();
+
+#if defined(CONFIG_NORFLASH)
+	/* LBSC */
+	writel(0x00000020, &lbsc->cs0ctrl);
+	writel(0x00000020, &lbsc->cs1ctrl);
+	writel(0x00002020, &lbsc->ecs0ctrl);
+	writel(0x00002020, &lbsc->ecs1ctrl);
+
+	writel(0x077F077F, &lbsc->cswcr0);
+	writel(0x077F077F, &lbsc->cswcr1);
+	writel(0x077F077F, &lbsc->ecswcr0);
+	writel(0x077F077F, &lbsc->ecswcr1);
+
+	/* DBSC3 */
+	s_init_wait(10);
+
+	writel(0x0000A55A, &dbsc3_0->dbpdlck);
+	writel(0x00000001, &dbsc3_0->dbpdrga);
+	writel(0x80000000, &dbsc3_0->dbpdrgd);
+	writel(0x00000004, &dbsc3_0->dbpdrga);
+	while ((readl(&dbsc3_0->dbpdrgd) & 0x00000001) != 0x00000001)
+		;
+
+	writel(0x00000006, &dbsc3_0->dbpdrga);
+	writel(0x0001C000, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000023, &dbsc3_0->dbpdrga);
+	writel(0x00FD2480, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000010, &dbsc3_0->dbpdrga);
+	writel(0xF004649B, &dbsc3_0->dbpdrgd);
+
+	writel(0x0000000F, &dbsc3_0->dbpdrga);
+	writel(0x00181EE4, &dbsc3_0->dbpdrgd);
+
+	writel(0x0000000E, &dbsc3_0->dbpdrga);
+	writel(0x33C03812, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000003, &dbsc3_0->dbpdrga);
+	writel(0x0300C481, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000007, &dbsc3_0->dbkind);
+	writel(0x10030A02, &dbsc3_0->dbconf0);
+	writel(0x00000001, &dbsc3_0->dbphytype);
+	writel(0x00000000, &dbsc3_0->dbbl);
+	writel(0x0000000B, &dbsc3_0->dbtr0);
+	writel(0x00000008, &dbsc3_0->dbtr1);
+	writel(0x00000000, &dbsc3_0->dbtr2);
+	writel(0x0000000B, &dbsc3_0->dbtr3);
+	writel(0x000C000B, &dbsc3_0->dbtr4);
+	writel(0x00000027, &dbsc3_0->dbtr5);
+	writel(0x0000001C, &dbsc3_0->dbtr6);
+	writel(0x00000005, &dbsc3_0->dbtr7);
+	writel(0x00000018, &dbsc3_0->dbtr8);
+	writel(0x00000008, &dbsc3_0->dbtr9);
+	writel(0x0000000C, &dbsc3_0->dbtr10);
+	writel(0x00000009, &dbsc3_0->dbtr11);
+	writel(0x00000012, &dbsc3_0->dbtr12);
+	writel(0x000000D0, &dbsc3_0->dbtr13);
+	writel(0x00140005, &dbsc3_0->dbtr14);
+	writel(0x00050004, &dbsc3_0->dbtr15);
+	writel(0x70233005, &dbsc3_0->dbtr16);
+	writel(0x000C0000, &dbsc3_0->dbtr17);
+	writel(0x00000300, &dbsc3_0->dbtr18);
+	writel(0x00000040, &dbsc3_0->dbtr19);
+	writel(0x00000001, &dbsc3_0->dbrnk0);
+	writel(0x00020001, &dbsc3_0->dbadj0);
+	writel(0x20082008, &dbsc3_0->dbadj2);
+	writel(0x00020002, &dbsc3_0->dbwt0cnf0);
+	writel(0x0000000F, &dbsc3_0->dbwt0cnf4);
+
+	writel(0x00000015, &dbsc3_0->dbpdrga);
+	writel(0x00000D70, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000016, &dbsc3_0->dbpdrga);
+	writel(0x00000006, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000017, &dbsc3_0->dbpdrga);
+	writel(0x00000018, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000012, &dbsc3_0->dbpdrga);
+	writel(0x9D5CBB66, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000013, &dbsc3_0->dbpdrga);
+	writel(0x1A868300, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000023, &dbsc3_0->dbpdrga);
+	writel(0x00FDB6C0, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000014, &dbsc3_0->dbpdrga);
+	writel(0x300214D8, &dbsc3_0->dbpdrgd);
+
+	writel(0x0000001A, &dbsc3_0->dbpdrga);
+	writel(0x930035C7, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000060, &dbsc3_0->dbpdrga);
+	writel(0x330657B2, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000011, &dbsc3_0->dbpdrga);
+	writel(0x1000040B, &dbsc3_0->dbpdrgd);
+
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x00000001, &dbsc3_0->dbpdrga);
+	writel(0x00000071, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000004, &dbsc3_0->dbpdrga);
+	while ((readl(&dbsc3_0->dbpdrgd) & 0x00000001) != 0x00000001)
+		;
+
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x2100FA00, &dbsc3_0->dbcmd);
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+	writel(0x0000FA00, &dbsc3_0->dbcmd);
+
+	writel(0x110000DB, &dbsc3_0->dbcmd);
+
+	writel(0x00000001, &dbsc3_0->dbpdrga);
+	writel(0x00000181, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000004, &dbsc3_0->dbpdrga);
+	while ((readl(&dbsc3_0->dbpdrgd) & 0x00000001) != 0x00000001)
+		;
+
+	writel(0x00000001, &dbsc3_0->dbpdrga);
+	writel(0x0000FE01, &dbsc3_0->dbpdrgd);
+
+	writel(0x00000004, &dbsc3_0->dbpdrga);
+	while ((readl(&dbsc3_0->dbpdrgd) & 0x00000001) != 0x00000001)
+		;
+
+	writel(0x00000000, &dbsc3_0->dbbs0cnt1);
+	writel(0x01004C20, &dbsc3_0->dbcalcnf);
+	writel(0x014000AA, &dbsc3_0->dbcaltr);
+	writel(0x00000140, &dbsc3_0->dbrfcnf0);
+	writel(0x00081860, &dbsc3_0->dbrfcnf1);
+	writel(0x00010000, &dbsc3_0->dbrfcnf2);
+	writel(0x00000001, &dbsc3_0->dbrfen);
+	writel(0x00000001, &dbsc3_0->dbacen);
+#endif /* CONFIG_NORFLASH */
+}
+#define	SetGuardREG(addr, mask, value)		\
+			{ \
+				u32 val; \
+				val = (readl(addr) & ~(mask)) | (value);	\
+				writel(~val, PMMR); \
+				writel(val, addr); \
+			}
+
+
 unsigned char buf[512];
+
+#define	MSTPSR7		0xE61501C4
+#define	SMSTPCR7	0xE615014C
+#define SCIF0_MSTP721	(1 << 21)
+
 
 int main(int argc, char * argv[]){
     int ret, input;
@@ -75,6 +1637,8 @@ int main(int argc, char * argv[]){
     volatile unsigned long *pGP2 = (volatile unsigned long *)GPIO2_VALUE;
 #endif
     unsigned long LedFlashCoutner = 10;
+unsigned long *pGPSR, pinValue;
+
 #ifdef TEST_LED_KOELSCH
     while(LedFlashCoutner--){
         *pGP2 = 0x55555555;
@@ -94,6 +1658,56 @@ int main(int argc, char * argv[]){
         somedelay(1);
     }
 #endif    
+	s_init();
+
+#if 0
+	pGPSR = (volatile unsigned long *)PMMR;
+	*pGPSR =	0xFFFFFFFF;
+
+
+/*Setting the GPSR2*/
+//	unsigned long *pGPSR = (volatile unsigned long *)GPSR2;
+	pGPSR = (volatile unsigned long *)GPSR2;
+//	*pGPSR = 0x3BC001E7;
+	pinValue = *pGPSR;
+	pinValue &= ~((1<<22)|(1<<23));
+	pinValue |= ((1<<22)|(1<<23));
+	*pGPSR = pinValue;
+
+//0x3BC001E7
+	pGPSR = (volatile unsigned long *)IPSR5;
+//	*pGPSR = 0x01520000;
+	pinValue = *pGPSR;
+	pinValue &= ~((1<<17)|(1<<20));
+	pinValue |= ((1<<17)|(1<<20));
+	*pGPSR = pinValue;
+#endif
+
+	pinValue = readl(MSTPSR7);
+	pinValue &= ~SCIF0_MSTP721;
+	writel(pinValue, SMSTPCR7);
+
+SetGuardREG(GPSR2,	0x00000000, 0x0);
+SetGuardREG(IPSR5,	0x00000000, 0x01520000);
+SetGuardREG(GPSR2,	0x00000000, 0x3BC001E7);
+
+SetGuardREG(GPSR0,	0x00000000, 0xffffffff);
+SetGuardREG(GPSR1,	0x00000000, 0x00ec3fff);
+SetGuardREG(GPSR3,	0x00000000, 0x5bffffff);
+SetGuardREG(GPSR4,	0x00000000, 0x1ffffffb);
+SetGuardREG(GPSR5,	0x00000000, 0x1ffffff0);
+SetGuardREG(GPSR6,	0x00000000, 0xcf7fffff);
+
+SetGuardREG(IPSR2,	0x00000000, 0x000244c8);
+SetGuardREG(IPSR4,	0x00000000, 0x00002400);
+SetGuardREG(IPSR6,	0x00000000, 0x00724003);
+
+
+
+/*Setting the IPSR*/
+//IPSR5	0x01520000
+
+
     GpioOutput(LED_GPIO_BASE,LED6,LED_OFF);
     GpioOutput(LED_GPIO_BASE,LED7,LED_OFF);
     GpioOutput(LED_GPIO_BASE,LED8,LED_OFF);

@@ -234,9 +234,9 @@ out:
 
 #endif	/* __mem_pci */
 
-static inline void sync(void)
-{
-}
+//static inline void sync(void)
+//{
+//}
 
 /*
  * Clear and set bits in one shot. These macros can be used to clear and
