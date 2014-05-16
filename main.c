@@ -64,6 +64,7 @@ struct Gpio_Regs {
 void somedelay(unsigned long delay);
 void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned int HL);
 
+#if 0
 /* QoS version 0.23 */
 
 enum {
@@ -1610,6 +1611,7 @@ void s_init(void)
 	writel(0x00000001, &dbsc3_0->dbacen);
 #endif /* CONFIG_NORFLASH */
 }
+#endif
 #define	SetGuardREG(addr, mask, value)		\
 			{ \
 				u32 val; \
@@ -1630,7 +1632,8 @@ int main(int argc, char * argv[]){
     int ret, input;
 //    unsigned char buf[512];
 	int Count4Printf;
-  
+	int len;
+  	unsigned long * pBinaryStart = (unsigned long * )0x50000000;
     struct spi_slave *pSpiSlave = NULL;
     struct spi_flash *spi_flash_new;
 #ifdef TEST_LED_KOELSCH
@@ -1708,26 +1711,28 @@ somedelay(10);
 
 /*Setting the IPSR*/
 //IPSR5	0x01520000
+    ret = sh_serial_init();
+    somedelay(10);
 
-
+#if 1
     GpioOutput(LED_GPIO_BASE,LED6,LED_OFF);
     GpioOutput(LED_GPIO_BASE,LED7,LED_OFF);
     GpioOutput(LED_GPIO_BASE,LED8,LED_OFF);
 
-    ret = sh_serial_init();
-    somedelay(10);
     GpioOutput(LED_GPIO_BASE,LED6,LED_ON);
     sh_serial_putc('A');
     sh_serial_putc('B');
     sh_serial_putc('C');
-    sh_serial_puts("Hello World\n");
+#endif
+    sh_serial_puts("Loader Flasher 1\n");
     //Below cannot be output, for the implement of printf
     //printf("LEDbase=%x\n",0x80000000);
     //printf("LEDbase=%x\n",0x8034c6bf);
     //printf("LEDbase=%d\n",0x8034c6bf);
-    printf("Please hit a key to continue:\n");
+ //   printf("Please hit a key to continue:\n");
     input = sh_serial_getc();
     printf("input=%c\n",input);
+#if 1	
     GpioOutput(LED_GPIO_BASE,LED7,LED_ON);
 	//    pSpiSlave = spi_setup_slave(0, 0,0,0);
     
@@ -1740,6 +1745,14 @@ somedelay(10);
 	for(Count4Printf=0; Count4Printf<512; Count4Printf++){
 		buf[Count4Printf] = 0x12;
 	}
+
+		printf("Test Read..........................\n");
+	ret = spi_flash_read(spi_flash_new, 0, 512, buf);
+	if (ret) {
+		printf("SPI flash read failed\n");
+		return 1;
+	}
+	udelay(3);
 	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
 		if(Count4Printf%10==0){
 			printf("\n");
@@ -1748,6 +1761,32 @@ somedelay(10);
 
 	}
 	printf("\n");
+#if 0
+	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
+		if(Count4Printf%10==0){
+			printf("\n");
+		}
+		printf("%xH=[%xH] ",Count4Printf,buf[Count4Printf]);
+
+	}
+	printf("\n");
+#endif
+#if 0
+	printf("Test Erase..........................\n");
+	ret = spi_flash_erase(spi_flash_new,0,16384);
+	if (ret) {
+		printf("SPI flash erase failed\n");
+		return 1;
+	}
+
+	printf("Test Write..........................\n");
+	ret = spi_flash_write(spi_flash_new, 0, 16384, pBinaryStart);
+	if (ret) {
+		printf("SPI flash write failed\n");
+		return 1;
+	}
+#endif
+
 #if 0
 	printf("Test Erase..........................\n");
 	ret = spi_flash_erase(spi_flash_new,8192,4096);
@@ -1763,6 +1802,8 @@ somedelay(10);
 		return 1;
 	}
 #endif
+
+#if 0
 	printf("Test Read..........................\n");
 	ret = spi_flash_read(spi_flash_new, 8192, 512, buf);
 	if (ret) {
@@ -1794,6 +1835,8 @@ somedelay(10);
 
 	}
 	printf("\n");
+#endif	
+#endif
     return 0;
 }
 
@@ -1826,3 +1869,145 @@ void GpioOutput(unsigned int GpioGroupBaseAddress, unsigned int pin, unsigned in
     Gpio0_regs->OUTDT = value;
     return ;
 }
+
+#if 0
+u8 asc2hex(const u8 *asc)
+{
+	u8 hex[2];
+	u8 out = 0;
+	u32 i = 0;
+
+	for (i=0;i<2;i++)
+	{
+		if ((asc[i]>='0')&&(asc[i]<='9'))
+		{
+			hex[i] = asc[i]-0x30;
+		}
+
+		if((asc[i]>='A')&&(asc[i]<='F'))
+		{
+			hex[i] = asc[i]-0x37;
+		}
+	}
+
+	out = hex[0]*16+hex[1];
+	return out;
+}
+
+int rec2bin(u8 *srec, u32 start_addr, u32 len)
+{
+	int i = 0;
+	u8 frame_lengh = 0;
+	int k = 0;
+	int j = 0;
+	u8 c;
+
+	while (1)
+	{
+		if (i < len)
+		{
+			if (srec[i] == 'S')
+			{
+				switch (srec[i+1])
+				{
+					case '0':
+						frame_lengh = asc2hex(srec+i+2);
+						i += frame_lengh*2+4;
+						break;
+					case '1':
+						frame_lengh = asc2hex(srec+i+2);
+						for (k=i+8;k<i+8+frame_lengh*2-6;)
+						{
+							//bin[j++] = asc2hex(srec+k);
+							c = asc2hex(srec+k);
+							write_flash_sequential(start_addr++, &c, 1);
+							k+=2;
+						}
+						i += frame_lengh*2+4;
+						if (((frame_lengh-2-1)%4) != 0)
+						{
+							c = 0xFF;
+
+							for (j=0;j<(4-((frame_lengh-2-1)%4));j++)
+							{
+								write_flash_sequential(start_addr++, &c, 1);
+							}
+						}
+						break;
+					case '2':
+						frame_lengh = asc2hex(srec+i+2);
+						for (k=i+10;k<i+10+frame_lengh*2-8;)
+						{
+							//bin[j++] = asc2hex(srec+k);
+							c = asc2hex(srec+k);
+							write_flash_sequential(start_addr++, &c, 1);
+							k+=2;
+						}
+						i += frame_lengh*2+4;
+						if (((frame_lengh-3-1)%4) != 0)
+						{
+							c = 0xFF;
+
+							for (j=0;j<(4-((frame_lengh-3-1)%4));j++)
+							{
+								write_flash_sequential(start_addr++, &c, 1);
+							}
+						}
+						break;
+					case '3':
+						frame_lengh = asc2hex(srec+i+2);
+						for (k=i+12;k<i+12+frame_lengh*2-10;)
+						{
+							//bin[j++] = asc2hex(srec+k);
+							c = asc2hex(srec+k);
+							write_flash_sequential(start_addr++, &c, 1);
+							k+=2;
+						}
+						i += frame_lengh*2+4;
+						if (((frame_lengh-4-1)%4) != 0)
+						{
+							c = 0xFF;
+
+							for (j=0;j<(4-((frame_lengh-4-1)%4));j++)
+							{
+								write_flash_sequential(start_addr++, &c, 1);
+							}
+						}
+						break;
+					case '9':
+					case '8':
+					case '7':
+						frame_lengh = asc2hex(srec+i+2);
+						i += frame_lengh*2+4;
+						i = len+1000;
+						break;
+					default:
+						i = len+1000;
+						break;
+				}
+			}
+			else
+			{
+				i++;
+				if(('\n' == srec[i-1]) || ('\r' == srec[i-1])|| (0 == srec[i-1])){
+					//serial_puts("Change Line --- [OK]\n");
+				}
+				else{
+					printf("Error Data occurs:[");
+					printf(srec[i-1]);
+					printf("] --- [NG]\n");
+
+				}
+			}
+		}
+		else
+		{
+			// serial_puts("srec2bin ok\n");
+			//serial_putc(j);
+			//return j;
+			return start_addr;
+		}
+	}
+
+}
+#endif

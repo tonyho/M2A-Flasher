@@ -183,6 +183,7 @@ int spi_flash_cmd_write_quad(struct spi_flash *flash, u32 offset,
 	int ret;
 	u8 cmd[5];
 
+	printf("Quad Write: offset=0x%x, len=0x%x\n",offset,len);
 	if(256 == flash->page_size){
 		page_size = 256;
 		byte_addr = offset % 256;
@@ -269,6 +270,7 @@ int spi_flash_cmd_read_quad(struct spi_flash *flash, u32 offset,
 	cmd[0] = CMD_READ_ARRAY_QUAD;
 	spi_flash_addr4(offset, cmd);
 	cmd[5] = 0x00;
+	printf("Spansion Quad read\n");
 
 	return spi_flash_read_common(flash, cmd, sizeof(cmd), data, len);
 }
