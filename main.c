@@ -1658,7 +1658,7 @@ unsigned long *pGPSR, pinValue;
         somedelay(1);
     }
 #endif    
-	s_init();
+	//s_init();
 
 #if 0
 	pGPSR = (volatile unsigned long *)PMMR;
@@ -1682,11 +1682,12 @@ unsigned long *pGPSR, pinValue;
 	pinValue |= ((1<<17)|(1<<20));
 	*pGPSR = pinValue;
 #endif
-
+#if 1
+#if 1
 	pinValue = readl(MSTPSR7);
 	pinValue &= ~SCIF0_MSTP721;
 	writel(pinValue, SMSTPCR7);
-
+#endif
 SetGuardREG(GPSR2,	0x00000000, 0x0);
 SetGuardREG(IPSR5,	0x00000000, 0x01520000);
 SetGuardREG(GPSR2,	0x00000000, 0x3BC001E7);
@@ -1701,7 +1702,8 @@ SetGuardREG(GPSR6,	0x00000000, 0xcf7fffff);
 SetGuardREG(IPSR2,	0x00000000, 0x000244c8);
 SetGuardREG(IPSR4,	0x00000000, 0x00002400);
 SetGuardREG(IPSR6,	0x00000000, 0x00724003);
-
+#endif
+somedelay(10);
 
 
 /*Setting the IPSR*/
@@ -1713,7 +1715,7 @@ SetGuardREG(IPSR6,	0x00000000, 0x00724003);
     GpioOutput(LED_GPIO_BASE,LED8,LED_OFF);
 
     ret = sh_serial_init();
-    somedelay(2);
+    somedelay(10);
     GpioOutput(LED_GPIO_BASE,LED6,LED_ON);
     sh_serial_putc('A');
     sh_serial_putc('B');
