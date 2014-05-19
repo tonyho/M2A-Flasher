@@ -17,11 +17,18 @@
 #include "spi_flash_internal.h"
 
 //extern int printf( const char* format, ...);
-
+#define FOUR_BYTE_MODE
+/* 4 Byte Address Command Set */
+#define OPCODE_FAST_READ4B	0x0c	/* Fast Read */
+#define OPCODE_PP4B			0x12	/* Page Program */
+#define OPCODE_BE4B			0xdc	/* Block Erase */
+#define OPCODE_SE4B			0x21	/* Sector Erase */
 
 /*!!FixMe!! Move to config.h*/
 //#define  CONFIG_SPI_FLASH_MACRONIX
 #define CONFIG_SPI_FLASH_SPANSION
+#define CONFIG_SPI_FLASH_MACRONIX 1
+
 /*!!FixMe!! End*/
  
 struct spi_flash flash_instance;
@@ -115,7 +122,11 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 	unsigned long page_addr, byte_addr, page_size;
 	size_t chunk_len, actual;
 	int ret;
+#ifdef FOUR_BYTE_MODE
+	u8 cmd[5];
+#else
 	u8 cmd[4];
+#endif
 
 	if(256 == flash->page_size){
 		page_size = 256;
@@ -136,16 +147,32 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 		return ret;
 	}
 
+#ifdef FOUR_BYTE_MODE
+	cmd[0] = OPCODE_PP4B;
+#else
 	cmd[0] = CMD_PAGE_PROGRAM;
+#endif
 	for (actual = 0; actual < len; actual += chunk_len) {
 		chunk_len = min(len - actual, page_size - byte_addr);
 
+#ifdef FOUR_BYTE_MODE
+		cmd[1] = page_addr >> 16;
+		cmd[2] = page_addr >> 8;
+		cmd[3] = page_addr;
+		cmd[4] = byte_addr;
+#else
 		cmd[1] = page_addr >> 8;
 		cmd[2] = page_addr;
 		cmd[3] = byte_addr;
+#endif
 
+#ifdef FOUR_BYTE_MODE
+		debug("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x%02x } chunk_len = %zu\n",
+		      buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], chunk_len);
+#else
 		debug("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %zu\n",
 		      buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], chunk_len);
+#endif
 
 		ret = spi_flash_cmd_write_enable(flash);
 		if (ret < 0) {
@@ -253,11 +280,19 @@ int spi_flash_read_common(struct spi_flash *flash, const u8 *cmd,
 int spi_flash_cmd_read_fast(struct spi_flash *flash, u32 offset,
 		size_t len, void *data)
 {
+#ifdef FOUR_BYTE_MODE
+	u8 cmd[6];
+
+	cmd[0] = OPCODE_FAST_READ4B;
+	spi_flash_addr(offset, cmd);
+	cmd[5] = 0x00;
+#else
 	u8 cmd[5];
 
 	cmd[0] = CMD_READ_ARRAY_FAST;
 	spi_flash_addr(offset, cmd);
 	cmd[4] = 0x00;
+#endif
 
 	return spi_flash_read_common(flash, cmd, sizeof(cmd), data, len);
 }
@@ -329,7 +364,11 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 {
 	u32 start, end, erase_size;
 	int ret;
+#ifdef FOUR_BYTE_MODE
+	u8 cmd[5];
+#else
 	u8 cmd[4];
+#endif
 
 	erase_size = flash->sector_size;
 /*!!FixMe!!*/
@@ -347,10 +386,18 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 		return ret;
 	}
 
+#ifdef FOUR_BYTE_MODE
+	//if (erase_cmd == 0x20)
+	if (erase_size == 4096)
+		cmd[0] = OPCODE_SE4B;
+	else
+		cmd[0] = OPCODE_BE4B;
+#else
 	if (erase_size == 4096)
 		cmd[0] = CMD_ERASE_4K;
 	else
 		cmd[0] = CMD_ERASE_64K;
+#endif
 	start = offset;
 	end = start + len;
 
@@ -358,8 +405,13 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 		spi_flash_addr(offset, cmd);
 		offset += erase_size;
 
+#ifdef FOUR_BYTE_MODE
+		debug("SF: erase 0x%x 0x%x 0x%x 0x%x 0x%x (%x)\n", cmd[0], cmd[1],
+		      cmd[2], cmd[3], cmd[4], offset);
+#else
 		debug("SF: erase 0x%x 0x%x 0x%x 0x%x (0x%x)\n", cmd[0], cmd[1],
 		      cmd[2], cmd[3], offset);
+#endif
 
 		ret = spi_flash_cmd_write_enable(flash);
 		if (ret)
@@ -606,7 +658,7 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 		}
 
 	if (!flash) {
-		printf("SF: Unsupported manufacturer %02x\n", *idp);
+		printf("SF: Unsupported manufacturer 0x%x\n", *idp);
 		goto err_manufacturer_probe;
 	}
 

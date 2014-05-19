@@ -1787,20 +1787,41 @@ somedelay(10);
 	}
 #endif
 
-#if 0
+#if 1
 	printf("Test Erase..........................\n");
-	ret = spi_flash_erase(spi_flash_new,8192,4096);
+	ret = spi_flash_erase(spi_flash_new,0x100000,0x100000);
 	if (ret) {
 		printf("SPI flash erase failed\n");
 		return 1;
 	}
+	for(Count4Printf=0; Count4Printf<512; Count4Printf++){
+		buf[Count4Printf] = 0x34;
+	}
 
 	printf("Test Write..........................\n");
-	ret = spi_flash_write(spi_flash_new, 8192, 512, buf);
+	ret = spi_flash_write(spi_flash_new, 0x100000, 512, buf);
 	if (ret) {
 		printf("SPI flash write failed\n");
 		return 1;
 	}
+	for(Count4Printf=0; Count4Printf<512; Count4Printf++){
+		buf[Count4Printf] = 0x12;
+	}
+	printf("Test Read..........................\n");
+	ret = spi_flash_read(spi_flash_new, 0x100000, 512, buf);
+	if (ret) {
+		printf("SPI flash read failed\n");
+		return 1;
+	}
+	udelay(3);
+	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
+		if(Count4Printf%10==0){
+			printf("\n");
+		}
+		printf("%xH=[%xH] ",Count4Printf,buf[Count4Printf]);
+
+	}
+	printf("\n");
 #endif
 
 #if 0
