@@ -35,9 +35,6 @@
 
 #include "spi_flash_internal.h"
 
-/*!!FixMe!!*/
-#define CONFIG_SPI_FLASH_QUAD
-/*!!FixMe!! End*/
 
 extern struct spi_flash flash_instance;
 

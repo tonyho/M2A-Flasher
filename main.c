@@ -1745,7 +1745,7 @@ somedelay(10);
 	for(Count4Printf=0; Count4Printf<512; Count4Printf++){
 		buf[Count4Printf] = 0x12;
 	}
-
+#if 1
 		printf("Test Read..........................\n");
 	ret = spi_flash_read(spi_flash_new, 0, 512, buf);
 	if (ret) {
@@ -1753,14 +1753,15 @@ somedelay(10);
 		return 1;
 	}
 	udelay(3);
-	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
-		if(Count4Printf%10==0){
+	for(Count4Printf=0; Count4Printf<512;Count4Printf+=4){
+		if(Count4Printf%16==0){
 			printf("\n");
 		}
-		printf("%xH=[%xH] ",Count4Printf,buf[Count4Printf]);
+		printf("%xH=[%x%x%x%x] ",Count4Printf,buf[Count4Printf+3],buf[Count4Printf+2],buf[Count4Printf+1],buf[Count4Printf]);
 
 	}
 	printf("\n");
+#endif
 #if 0
 	for(Count4Printf=0; Count4Printf<512;Count4Printf++){
 		if(Count4Printf%10==0){
@@ -1787,7 +1788,7 @@ somedelay(10);
 	}
 #endif
 
-#if 1
+#if 0
 	printf("Test Erase..........................\n");
 	ret = spi_flash_erase(spi_flash_new,0x100000,0x100000);
 	if (ret) {

@@ -17,7 +17,8 @@
 #include "spi_flash_internal.h"
 
 //extern int printf( const char* format, ...);
-#define FOUR_BYTE_MODE
+//#define FOUR_BYTE_MODE
+#define OPCODE_EN4B		0xb7	/* Enter 4-byte address mode */
 /* 4 Byte Address Command Set */
 #define OPCODE_FAST_READ4B	0x0c	/* Fast Read */
 #define OPCODE_PP4B			0x12	/* Page Program */
@@ -26,7 +27,7 @@
 
 /*!!FixMe!! Move to config.h*/
 //#define  CONFIG_SPI_FLASH_MACRONIX
-#define CONFIG_SPI_FLASH_SPANSION
+//#define CONFIG_SPI_FLASH_SPANSION
 #define CONFIG_SPI_FLASH_MACRONIX 1
 
 /*!!FixMe!! End*/
@@ -37,9 +38,16 @@ struct spi_flash flash_instance;
 static void spi_flash_addr(u32 addr, u8 *cmd)
 {
 	/* cmd[0] is actual command */
+#ifdef FOUR_BYTE_MODE
+	cmd[1] = addr >> 24;
+	cmd[2] = addr >> 16;
+	cmd[3] = addr >> 8;
+	cmd[4] = addr >> 0;
+#else
 	cmd[1] = addr >> 16;
 	cmd[2] = addr >> 8;
 	cmd[3] = addr >> 0;
+#endif
 }
 
 static void spi_flash_addr4(u32 addr, u8 *cmd)
@@ -179,9 +187,14 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 			debug("SF: enabling write failed\n");
 			break;
 		}
-
+		
+#ifdef FOUR_BYTE_MODE
+		ret = spi_flash_cmd_write(flash->spi, cmd, 5,
+					  buf + actual, chunk_len);
+#else
 		ret = spi_flash_cmd_write(flash->spi, cmd, 4,
 					  buf + actual, chunk_len);
+#endif
 		if (ret < 0) {
 			debug("SF: write failed\n");
 			break;
@@ -613,6 +626,9 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 	struct spi_flash *flash = NULL;//&flash_instance;
 	int ret, i, shift;
 	u8 idcode[IDCODE_LEN], *idp;
+#ifdef FOUR_BYTE_MODE
+	u8 cmd = OPCODE_EN4B;
+#endif
 	unsigned int Counter4IDCode = 0;
 
 	spi = spi_setup_slave(bus, cs, max_hz, spi_mode);
@@ -666,6 +682,23 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 		flash->name,flash->page_size,flash->page_size);
 	printf("flash->sector_size=0x%x,%dKB\n",flash->sector_size,flash->sector_size/1024);
 	printf("flash->size = 0x%x, %dMB\n",flash->size,flash->size/1024/1024);
+
+#ifdef FOUR_BYTE_MODE
+		if (flash->size <= 0x1000000)
+			printf("SF: Flash is smaller than 128Mbits, may error with 4-byte address mode\n");
+	
+		ret = spi_claim_bus(flash->spi);
+		if (ret) {
+			printf("SF: Unable to claim SPI bus\n");
+			return ret;
+		}
+	
+		printf("SF: Enter 4-byte address mode\n");
+		spi_flash_cmd_write(flash->spi, &cmd, 1, NULL, 0);
+	
+		spi_release_bus(flash->spi);
+#endif
+
 
 	spi_release_bus(spi);
 
