@@ -178,7 +178,7 @@ int spi_flash_cmd_write_multi(struct spi_flash *flash, u32 offset,
 		debug("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x%02x } chunk_len = %zu\n",
 		      buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], chunk_len);
 #else
-		debug("PP: 0x%p => cmd = { 0x%02x 0x%02x%02x%02x } chunk_len = %zu\n",
+		debug("PP: 0x%x => cmd = { 0x%x 0x%x 0x%x 0x%x } chunk_len = %d\n",
 		      buf + actual, cmd[0], cmd[1], cmd[2], cmd[3], chunk_len);
 #endif
 
@@ -352,9 +352,10 @@ int spi_flash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 			break;
 		//udelay(Timeout4Polling--);
 		udelay(1);
+		Timeout4Polling--;
 	//} while (get_timer(timebase) < timeout);
-//	} while (Timeout4Polling);
-	} while (1);
+	} while (Timeout4Polling);
+//	} while (1);
 
 
 	spi_xfer(spi, 0, NULL, NULL, SPI_XFER_END);

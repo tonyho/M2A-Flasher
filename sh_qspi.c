@@ -151,19 +151,26 @@ static int sh_qspi_xfer(
 	struct sh_qspi *ss, unsigned char *tdata,
 	unsigned char *rdata, unsigned long flags)
 {
+	unsigned long retry = 600;
 
 	while (!(sh_qspi_readb(&ss->regs->spsr) & SH_QSPI_SPTEF)) {
 		//if (ctrlc())
 		//	return 1;
 		udelay(1);
+		printf("Wait TEF\n");
 	}
 
 	sh_qspi_writeb(*tdata, (unsigned char *)(&ss->regs->spdr));
 
-	while (!(sh_qspi_readb(&ss->regs->spsr) & SH_QSPI_SPRFF)) {
+	while (!(sh_qspi_readb(&ss->regs->spsr) & SH_QSPI_SPRFF) && (0 != retry)) {
 		//if (ctrlc())
 		//	return 1;
 		udelay(1);
+		printf("Wait RFF\n");
+		retry --;
+		if(1 == retry){
+			printf("Have retry for %d times !!\n",retry);
+		}
 	}
 
 	*rdata = sh_qspi_readb((unsigned char *)(&ss->regs->spdr));

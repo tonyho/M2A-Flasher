@@ -1620,8 +1620,8 @@ void s_init(void)
 				writel(val, addr); \
 			}
 
-
-unsigned char buf[512];
+#define DATA_BUFF_LEN 512//4096
+unsigned char buf[DATA_BUFF_LEN];
 
 #define	MSTPSR7		0xE61501C4
 #define	SMSTPCR7	0xE615014C
@@ -1633,7 +1633,7 @@ int main(int argc, char * argv[]){
 //    unsigned char buf[512];
 	int Count4Printf;
 	int len;
-  	unsigned long * pBinaryStart = (unsigned long * )0x50000000;
+  	//unsigned long * pBinaryStart = (unsigned long * )0x51000000;
     struct spi_slave *pSpiSlave = NULL;
     struct spi_flash *spi_flash_new;
 #ifdef TEST_LED_KOELSCH
@@ -1641,6 +1641,7 @@ int main(int argc, char * argv[]){
 #endif
     unsigned long LedFlashCoutner = 10;
 unsigned long *pGPSR, pinValue;
+char *pFlasherData = (char *)(0x51000000);
 
 #ifdef TEST_LED_KOELSCH
     while(LedFlashCoutner--){
@@ -1744,6 +1745,46 @@ somedelay(10);
 	}
 	for(Count4Printf=0; Count4Printf<512; Count4Printf++){
 		buf[Count4Printf] = 0x12;
+	}
+
+	printf("Test Erase..........................\n");
+	ret = spi_flash_erase(spi_flash_new,0,0x10000);
+	if (ret) {
+		printf("SPI flash erase failed\n");
+//		return 1;
+
+		ret = spi_flash_read(spi_flash_new, 0, 512, buf);
+		if (ret) {
+			printf("SPI flash read failed\n");
+			return 1;
+		}
+		udelay(3);
+		for(Count4Printf=0; Count4Printf<512;Count4Printf+=4){
+			if(Count4Printf%16==0){
+				printf("\n");
+			}
+			printf("%xH=[%x%x%x%x] ",Count4Printf,buf[Count4Printf+3],buf[Count4Printf+2],buf[Count4Printf+1],buf[Count4Printf]);
+	
+		}
+		printf("\n");
+
+	}
+	printf("Will copy the data to be written\n");
+	for(Count4Printf=0; Count4Printf<DATA_BUFF_LEN; Count4Printf++){
+		printf("Source Address=0x%x\n",pFlasherData+Count4Printf);
+		//printf( "Dest Address= 0x%x\n",buf+Count4Printf);
+		printf( "bufval= 0x%x\n",buf[Count4Printf]);
+		printf( "PFlashval Char= 0x%x\n",*(pFlasherData));
+		printf( "PFlashval= 0x%x\n",*(pFlasherData+Count4Printf));
+		buf[Count4Printf] = *(pFlasherData+Count4Printf);
+	}
+
+	printf("Test Write..........................\n");
+	//ret = spi_flash_write(spi_flash_new, 0, 0x1000, pFlasherData);
+	ret = spi_flash_write(spi_flash_new, 0, DATA_BUFF_LEN, buf);
+	if (ret) {
+		printf("SPI flash write failed\n");
+		return 1;
 	}
 #if 1
 		printf("Test Read..........................\n");
