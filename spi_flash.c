@@ -88,7 +88,7 @@ static int spi_flash_read_write(struct spi_slave *spi,
 		flags |= SPI_XFER_END;
 
 	ret = spi_xfer(spi, cmd_len * 8, cmd, NULL, flags);
-	printf("spi_xfer ret=%d,cmd[0]=0x%x\n",ret,cmd[0]);
+	//printf("spi_xfer ret=%d,cmd[0]=0x%x\n",ret,cmd[0]);
 	if (ret) {
 		debug("SF: Failed to send command (%d bytes): %d\n",
 				cmd_len, ret);
@@ -330,7 +330,7 @@ int spi_flash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 	unsigned long timebase;
 	int ret;
 	u8 status;
-	unsigned long Timeout4Polling = 10;
+	unsigned long Timeout4Polling = 4*500000;
 
 	ret = spi_xfer(spi, 8, &cmd, NULL, SPI_XFER_BEGIN);
 	if (ret) {
@@ -351,8 +351,11 @@ int spi_flash_cmd_poll_bit(struct spi_flash *flash, unsigned long timeout,
 		if ((status & poll_bit) == 0)
 			break;
 		//udelay(Timeout4Polling--);
-		udelay(1);
+		udelay(100);
 		Timeout4Polling--;
+		if(1 == Timeout4Polling){
+			printf("Poliing Time Out!!\n");
+		}
 	//} while (get_timer(timebase) < timeout);
 	} while (Timeout4Polling);
 //	} while (1);
@@ -442,7 +445,7 @@ int spi_flash_cmd_erase(struct spi_flash *flash, u32 offset, size_t len)
 			goto out;
 	}
 
-	debug("SF: Successfully erased %zu bytes @ %#x\n", len, start);
+	debug("SF: Successfully erased 0x%x bytes @ 0x%x\n", len, start);
 
  out:
 	spi_release_bus(flash->spi);

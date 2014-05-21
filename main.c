@@ -1620,7 +1620,7 @@ void s_init(void)
 				writel(val, addr); \
 			}
 
-#define DATA_BUFF_LEN 512//4096
+#define DATA_BUFF_LEN  16384//512//4096
 unsigned char buf[DATA_BUFF_LEN];
 
 #define	MSTPSR7		0xE61501C4
@@ -1753,15 +1753,23 @@ somedelay(10);
 		printf("SPI flash erase failed\n");
 //		return 1;
 
-		ret = spi_flash_read(spi_flash_new, 0, 512, buf);
+		ret = spi_flash_read(spi_flash_new, 4096, 256, buf);
 		if (ret) {
 			printf("SPI flash read failed\n");
 			return 1;
 		}
-		udelay(3);
+		udelay(300);
+		ret = spi_flash_read(spi_flash_new, 0, 256, buf+256);
+		if (ret) {
+			printf("SPI flash read failed\n");
+			return 1;
+		}
 		for(Count4Printf=0; Count4Printf<512;Count4Printf+=4){
 			if(Count4Printf%16==0){
 				printf("\n");
+			}
+			if(Count4Printf==256){
+				printf("Offset 0:\n");
 			}
 			printf("%xH=[%x%x%x%x] ",Count4Printf,buf[Count4Printf+3],buf[Count4Printf+2],buf[Count4Printf+1],buf[Count4Printf]);
 	
@@ -1771,11 +1779,14 @@ somedelay(10);
 	}
 	printf("Will copy the data to be written\n");
 	for(Count4Printf=0; Count4Printf<DATA_BUFF_LEN; Count4Printf++){
+//	udelay(10);
+#if 0
 		printf("Source Address=0x%x\n",pFlasherData+Count4Printf);
 		//printf( "Dest Address= 0x%x\n",buf+Count4Printf);
 		printf( "bufval= 0x%x\n",buf[Count4Printf]);
 		printf( "PFlashval Char= 0x%x\n",*(pFlasherData));
 		printf( "PFlashval= 0x%x\n",*(pFlasherData+Count4Printf));
+#endif
 		buf[Count4Printf] = *(pFlasherData+Count4Printf);
 	}
 
@@ -1788,20 +1799,29 @@ somedelay(10);
 	}
 #if 1
 		printf("Test Read..........................\n");
-	ret = spi_flash_read(spi_flash_new, 0, 512, buf);
-	if (ret) {
-		printf("SPI flash read failed\n");
-		return 1;
-	}
-	udelay(3);
-	for(Count4Printf=0; Count4Printf<512;Count4Printf+=4){
-		if(Count4Printf%16==0){
-			printf("\n");
+	ret = spi_flash_read(spi_flash_new, 4096, 256, buf);
+		if (ret) {
+			printf("SPI flash read failed\n");
+			return 1;
 		}
-		printf("%xH=[%x%x%x%x] ",Count4Printf,buf[Count4Printf+3],buf[Count4Printf+2],buf[Count4Printf+1],buf[Count4Printf]);
-
-	}
-	printf("\n");
+		udelay(300);
+		ret = spi_flash_read(spi_flash_new, 0, 256, buf+256);
+		if (ret) {
+			printf("SPI flash read failed\n");
+			return 1;
+		}
+		for(Count4Printf=0; Count4Printf<512;Count4Printf+=4){
+			if(Count4Printf%16==0){
+				printf("\n");
+			}
+			if(Count4Printf==256){
+				printf("Offset 0:\n");
+			}
+			printf("%xH=[%x%x%x%x] ",Count4Printf,buf[Count4Printf+3],buf[Count4Printf+2],buf[Count4Printf+1],buf[Count4Printf]);
+	
+		}
+		printf("\n");
+	
 #endif
 #if 0
 	for(Count4Printf=0; Count4Printf<512;Count4Printf++){

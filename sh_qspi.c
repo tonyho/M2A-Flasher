@@ -156,8 +156,8 @@ static int sh_qspi_xfer(
 	while (!(sh_qspi_readb(&ss->regs->spsr) & SH_QSPI_SPTEF)) {
 		//if (ctrlc())
 		//	return 1;
-		udelay(1);
-		printf("Wait TEF\n");
+		udelay(40);
+		//printf("Wait TEF\n");
 	}
 
 	sh_qspi_writeb(*tdata, (unsigned char *)(&ss->regs->spdr));
@@ -165,8 +165,8 @@ static int sh_qspi_xfer(
 	while (!(sh_qspi_readb(&ss->regs->spsr) & SH_QSPI_SPRFF) && (0 != retry)) {
 		//if (ctrlc())
 		//	return 1;
-		udelay(1);
-		printf("Wait RFF\n");
+		udelay(40);
+//		printf("Wait RFF\n");
 		retry --;
 		if(1 == retry){
 			printf("Have retry for %d times !!\n",retry);
