@@ -27,8 +27,8 @@
 
 /*!!FixMe!! Move to config.h*/
 //#define  CONFIG_SPI_FLASH_MACRONIX
-//#define CONFIG_SPI_FLASH_SPANSION
-#define CONFIG_SPI_FLASH_MACRONIX 1
+#define CONFIG_SPI_FLASH_SPANSION
+//#define CONFIG_SPI_FLASH_MACRONIX 1
 
 /*!!FixMe!! End*/
  
@@ -504,7 +504,7 @@ int spi_flash_cmd_erase_quad(struct spi_flash *flash, u32 offset, size_t len)
 		offset += erase_size;
 	}
 
-	debug("SF: Successfully erased %zu bytes @ %#x\n", len, start);
+	debug("SF: Successfully erased %d bytes @ 0x%x\n", len, start);
 
  out:
 	spi_release_bus(flash->spi);
@@ -658,7 +658,7 @@ struct spi_flash *spi_flash_probe(unsigned int bus, unsigned int cs,
 #endif
 	printf("SF: Got idcodes: \n");
 	for(Counter4IDCode=0;Counter4IDCode<IDCODE_LEN; Counter4IDCode++){
-		printf("idcode[%d]=0x%x  ",Counter4IDCode,idcode[Counter4IDCode]);
+		printf("idcode[%d]=0x%x\n",Counter4IDCode,idcode[Counter4IDCode]);
 	}
 	printf("\n");
 
